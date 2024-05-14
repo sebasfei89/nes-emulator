@@ -11,6 +11,7 @@ void MOS6502::groupTwo_ASL(AddressingMode addrMode) {
     case AddressingMode::Accumulator:
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         readModifyWrite(addrMode, [&](uint8_t &operand) {
                 updateFlag(Flags::Carry, operand & 0x80);
                 operand <<= 1;
@@ -32,6 +33,7 @@ void MOS6502::groupTwo_ROL(AddressingMode addrMode) {
     case AddressingMode::Accumulator:
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         readModifyWrite(addrMode, [&](uint8_t& operand) {
                 uint8_t tmp = (operand << 1) | testFlag(Flags::Carry);
                 updateFlag(Flags::Carry, operand & 0x80);
@@ -54,6 +56,7 @@ void MOS6502::groupTwo_LSR(AddressingMode addrMode) {
     case AddressingMode::Accumulator:
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         readModifyWrite(addrMode, [&](uint8_t& operand) {
                 updateFlag(Flags::Carry, operand & 0x01);
                 operand >>= 1;
@@ -75,6 +78,7 @@ void MOS6502::groupTwo_ROR(AddressingMode addrMode) {
     case AddressingMode::Accumulator:
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         readModifyWrite(addrMode, [&](uint8_t& operand) {
                 uint8_t tmp = (operand >> 1) | testFlag(Flags::Carry) << 7;
                 updateFlag(Flags::Carry, operand & 0x01);
@@ -106,8 +110,11 @@ void MOS6502::groupTwo_STX(AddressingMode addrMode) {
         break;
     case AddressingMode::XIndexedAbsolute:
         break;
-    default:
+    case AddressingMode::Absolute:
+    case AddressingMode::ZeroPage:
         writeResult(addrMode, mX);
+        break;
+    default:
         break;
     }
 }
@@ -130,6 +137,7 @@ void MOS6502::groupTwo_LDX(AddressingMode addrMode) {
     case AddressingMode::Immediate:
     case AddressingMode::Absolute:
     case AddressingMode::YIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         mX = readOperand(addrMode);
         updateNZStatusFlags(mX);
         break;
@@ -146,6 +154,7 @@ void MOS6502::groupTwo_DEC(AddressingMode addrMode) {
         break;
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         readModifyWrite(addrMode, [this](uint8_t& operand) {
                 --operand;
                 updateNZStatusFlags(operand);
@@ -164,6 +173,7 @@ void MOS6502::groupTwo_INC(AddressingMode addrMode) {
         break;
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         readModifyWrite(addrMode, [this](uint8_t& operand) {
                 ++operand;
                 updateNZStatusFlags(operand);

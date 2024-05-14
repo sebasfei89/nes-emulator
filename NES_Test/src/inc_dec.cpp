@@ -17,6 +17,10 @@ SCENARIO("Decrement instructions")
     // X-Indexed Absolute
     nes.testProgram("DEC $0200,X with X=0 and [$0200]=1", {OP::DEC_XAB, 0x00, 0x02}, 7, {{OPAddr::MemABS, 1}, {OPAddr::X, 0}}, 0x80, OPAddr::MemABS, 0x00, 0x02);
     nes.testProgram("DEC $01FF,X with X=1 and [$0200]=0", {OP::DEC_XAB, 0xFF, 0x01}, 7, {{OPAddr::MemABS, 0}, {OPAddr::X, 1}}, 0x02, OPAddr::MemABS, 0xFF, 0x80);
+
+    // Zero Page
+    nes.testProgram("DEC $00 with [$0000]=1", {OP::DEC_ZPG, 0}, 5, OPAddr::MemZeroPage, 1, 0x80, OPAddr::MemZeroPage, 0x00, 0x02);
+    nes.testProgram("DEC $01 with [$0001]=0", {OP::DEC_ZPG, 1}, 5, OPAddr::MemZeroPage_1, 0, 0x02, OPAddr::MemZeroPage_1, 0xFF, 0x80);
 }
 
 SCENARIO("Increment instructions")
@@ -36,4 +40,8 @@ SCENARIO("Increment instructions")
     // X-Indexed Absolute
     nes.testProgram("INC $0200,X with X=0 and [$0200]=$FF", {OP::INC_XAB, 0x00, 0x02}, 7, {{OPAddr::MemABS, 0xFF}, {OPAddr::X, 0}}, 0x80, OPAddr::MemABS, 0x00, 0x02);
     nes.testProgram("INC $01FF,X with X=1 and [$0200]=$7F", {OP::INC_XAB, 0xFF, 0x01}, 7, {{OPAddr::MemABS, 0x7F}, {OPAddr::X, 1}}, 0x02, OPAddr::MemABS, 0x80, 0x80);
+
+    // Zero Page
+    nes.testProgram("INC $00 with [$0000]=$FF", {OP::INC_ZPG, 0}, 5, OPAddr::MemZeroPage, 0xFF, 0x80, OPAddr::MemZeroPage, 0x00, 0x02);
+    nes.testProgram("INC $01 with [$0001]=$7F", {OP::INC_ZPG, 1}, 5, OPAddr::MemZeroPage_1, 0x7F, 0x02, OPAddr::MemZeroPage_1, 0x80, 0x80);
 }

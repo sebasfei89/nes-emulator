@@ -48,7 +48,8 @@ void MOS6502::groupThree_BIT(AddressingMode addrMode) {
         setFlag(Flags::Carry);
         ++mCyclesUsed;
         break;
-    case AddressingMode::Absolute: {
+    case AddressingMode::Absolute:
+    case AddressingMode::ZeroPage: {
         const uint8_t operand = readOperand(addrMode);
         updateFlag(Flags::Negative, operand & 0x80);
         updateFlag(Flags::Overflow, operand & 0x40);
@@ -125,8 +126,11 @@ void MOS6502::groupThree_STY(AddressingMode addrMode) {
         ++mCyclesUsed;
         break;
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::XIndexedZeroPage:
         break;
     default:
+        //case AddressingMode::Absolute:
+        //case AddressingMode::ZeroPage:
         writeResult(addrMode, mY);
         break;
     }
@@ -147,6 +151,7 @@ void MOS6502::groupThree_LDY(AddressingMode addrMode) {
     case AddressingMode::Immediate:
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::ZeroPage:
         mY = readOperand(addrMode);
         updateNZStatusFlags(mY);
         break;
@@ -167,7 +172,8 @@ void MOS6502::groupThree_CPY(AddressingMode addrMode) {
         ++mCyclesUsed;
         break;
     case AddressingMode::Immediate:
-    case AddressingMode::Absolute: {
+    case AddressingMode::Absolute:
+    case AddressingMode::ZeroPage: {
         const uint8_t operand = readOperand(addrMode);
         updateFlag(Flags::Carry, operand <= mY);
         updateNZStatusFlags(mY - operand);
@@ -189,7 +195,8 @@ void MOS6502::groupThree_CPX(AddressingMode addrMode) {
         ++mCyclesUsed;
         break;
     case AddressingMode::Immediate:
-    case AddressingMode::Absolute: {
+    case AddressingMode::Absolute:
+    case AddressingMode::ZeroPage: {
         const uint8_t operand = readOperand(addrMode);
         updateFlag(Flags::Carry, operand <= mX);
         updateNZStatusFlags(mX - operand);

@@ -13,6 +13,7 @@ enum class OPAddr : uint8_t {
     // Memory addressing:
     MemABS, MemABS_1, // Absolute
     MemABS_IND, // Absolute Indirect with page cross
+    MemZeroPage, MemZeroPage_1, // Zero Page
     MemIRQ_HI, MemIRQ_LO, // IRQ vector
     MemSTK_0, MemSTK_1, MemSTK_2, // Stack
 };
@@ -24,6 +25,7 @@ struct OPAddrInitializer {
 
 struct NESTest
 {
+    static constexpr uint16_t CPU_ZERO_PAGE_ADDRESS = 0x0000;
     static constexpr uint16_t CPU_ABSOLUTE_ADDRESS = 0x0200;
     static constexpr uint16_t CPU_ABSOLUTE_ADDRESS_WITH_PAGE_CROSS = 0x02FF;
     static constexpr uint16_t PROGRAM_STARTUP_ADDR = 0x8000;
@@ -101,6 +103,8 @@ struct NESTest
         case OPAddr::MemABS: return cpuRam(CPU_ABSOLUTE_ADDRESS);
         case OPAddr::MemABS_1: return cpuRam(CPU_ABSOLUTE_ADDRESS+1);
         case OPAddr::MemABS_IND: return cpuRam(CPU_ABSOLUTE_ADDRESS_WITH_PAGE_CROSS);
+        case OPAddr::MemZeroPage: return cpuRam(CPU_ZERO_PAGE_ADDRESS);
+        case OPAddr::MemZeroPage_1: return cpuRam(CPU_ZERO_PAGE_ADDRESS+1);
         case OPAddr::MemSTK_0: return cpuRam(nes::STACK_ADDRESS);
         case OPAddr::MemSTK_1: return cpuRam(nes::STACK_ADDRESS-1);
         case OPAddr::MemSTK_2: return cpuRam(nes::STACK_ADDRESS-2);
@@ -134,6 +138,12 @@ struct NESTest
             break;
         case OPAddr::MemABS_IND:
             cpuRam(CPU_ABSOLUTE_ADDRESS_WITH_PAGE_CROSS) = value;
+            break;
+        case OPAddr::MemZeroPage:
+            cpuRam(CPU_ZERO_PAGE_ADDRESS) = value;
+            break;
+        case OPAddr::MemZeroPage_1:
+            cpuRam(CPU_ZERO_PAGE_ADDRESS + 1) = value;
             break;
         case OPAddr::MemIRQ_LO:
             writeCart(nes::IRQ_VECTOR_ADDRESS, value);

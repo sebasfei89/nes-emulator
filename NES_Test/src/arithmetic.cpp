@@ -27,6 +27,10 @@ SCENARIO("Add to accumulator with carry")
     nes.testProgram("ADC $0200,Y with Y=1 and [$0201]=1 and ACC=$02 and C=1", {OP::ADC_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 1}, {OPAddr::Acc, 0x02},{OPAddr::MemABS_1, 0x01}}, 0xC3, OPAddr::Acc, 0x04, 0x00);
     nes.testProgram("ADC $01FF,Y with Y=1 and [$0200]=1 and ACC=$FF and C=0", {OP::ADC_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 1}, {OPAddr::Acc, 0xFF},{OPAddr::MemABS, 0x01}}, 0xC0, OPAddr::Acc, 0x00, 0x03);
     nes.testProgram("ADC $01FF,Y with Y=1 and [$0200]=1 and ACC=$7F and C=0", {OP::ADC_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 1}, {OPAddr::Acc, 0x7F},{OPAddr::MemABS, 0x01}}, 0x02, OPAddr::Acc, 0x80, 0xC0);
+
+    // Zero Page
+    nes.testProgram("ADC $00 with [$0000]=1 and ACC=$FE and C=1", {OP::ADC_ZPG, 0x00}, 3, {{OPAddr::Acc, 0xFE}, {OPAddr::MemZeroPage, 0x01}}, 0xC1, OPAddr::Acc, 0x00, 0x03);
+    nes.testProgram("ADC $01 with [$0001]=1 and ACC=$7F and C=0", {OP::ADC_ZPG, 0x01}, 3, {{OPAddr::Acc, 0x7F}, {OPAddr::MemZeroPage_1, 0x01}}, 0x02, OPAddr::Acc, 0x80, 0xC0);
 }
 
 SCENARIO("Compare with accumulator")
@@ -52,6 +56,10 @@ SCENARIO("Compare with accumulator")
     nes.testProgram("CMP $0200,Y with Y=0 and [$0200]=1 and ACC=1", {OP::CMP_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0x00}, {OPAddr::Acc, 0x01}, {OPAddr::MemABS, 0x01}}, 0x80, OPAddr::Acc, 0x01, 0x03);
     nes.testProgram("CMP $0200,Y with Y=1 and [$0201]=1 and ACC=2", {OP::CMP_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0x01}, {OPAddr::Acc, 0x02}, {OPAddr::MemABS_1, 0x01}}, 0x82, OPAddr::Acc, 0x02, 0x01);
     nes.testProgram("CMP $01FF,Y with Y=1 and [$0200]=2 and ACC=1", {OP::CMP_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 0x01}, {OPAddr::Acc, 0x01}, {OPAddr::MemABS, 0x02}}, 0x03, OPAddr::Acc, 0x01, 0x80);
+
+    // Zero Page
+    nes.testProgram("CMP $00 with [$0000]=1 and ACC=1", {OP::CMP_ZPG, 0x00}, 3, {{OPAddr::Acc, 1}, {OPAddr::MemZeroPage, 1}}, 0x80, OPAddr::Acc, 0x01, 0x03);
+    nes.testProgram("CMP $01 with [$0001]=2 and ACC=1", {OP::CMP_ZPG, 0x01}, 3, {{OPAddr::Acc, 1}, {OPAddr::MemZeroPage_1, 2}}, 0x03, OPAddr::Acc, 0x01, 0x80);
 }
 
 SCENARIO("Compare with X register")
@@ -67,6 +75,10 @@ SCENARIO("Compare with X register")
     nes.testProgram("CPX $0200 with [$0200] = $01 and X = $01", { OP::CPX_ABS, 0x00, 0x02 }, 4, { {OPAddr::X, 0x01}, {OPAddr::MemABS, 0x01} }, 0x80, OPAddr::X, 0x01, 0x03);
     nes.testProgram("CPX $0200 with [$0200] = $01 and X = $02", { OP::CPX_ABS, 0x00, 0x02 }, 4, { {OPAddr::X, 0x02}, {OPAddr::MemABS, 0x01} }, 0x82, OPAddr::X, 0x02, 0x01);
     nes.testProgram("CPX $0200 with [$0200] = $02 and X = $01", { OP::CPX_ABS, 0x00, 0x02 }, 4, { {OPAddr::X, 0x01}, {OPAddr::MemABS, 0x02} }, 0x03, OPAddr::X, 0x01, 0x80);
+
+    // Zero Page
+    nes.testProgram("CPX $00 with [$0000]=1 and X=1", {OP::CPX_ZPG, 0x00}, 3, {{OPAddr::X, 0x01}, {OPAddr::MemZeroPage, 1}}, 0x80, OPAddr::X, 0x01, 0x03);
+    nes.testProgram("CPX $01 with [$0001]=2 and X=1", {OP::CPX_ZPG, 0x01}, 3, {{OPAddr::X, 0x01}, {OPAddr::MemZeroPage_1, 2}}, 0x03, OPAddr::X, 0x01, 0x80);
 }
 
 SCENARIO("Compare with Y register")
@@ -82,6 +94,10 @@ SCENARIO("Compare with Y register")
     nes.testProgram("CPY $0200 with [$0200] = $01 and y = $01", { OP::CPY_ABS, 0x00, 0x02 }, 4, { {OPAddr::Y, 0x01}, {OPAddr::MemABS, 0x01} }, 0x80, OPAddr::Y, 0x01, 0x03);
     nes.testProgram("CPY $0200 with [$0200] = $01 and y = $02", { OP::CPY_ABS, 0x00, 0x02 }, 4, { {OPAddr::Y, 0x02}, {OPAddr::MemABS, 0x01} }, 0x82, OPAddr::Y, 0x02, 0x01);
     nes.testProgram("CPY $0200 with [$0200] = $02 and y = $01", { OP::CPY_ABS, 0x00, 0x02 }, 4, { {OPAddr::Y, 0x01}, {OPAddr::MemABS, 0x02} }, 0x03, OPAddr::Y, 0x01, 0x80);
+
+    // Zero Page
+    nes.testProgram("CPY $00 with [$0000]=1 and Y=1", {OP::CPY_ZPG, 0x00}, 3, {{OPAddr::Y, 1}, {OPAddr::MemZeroPage, 1}}, 0x80, OPAddr::Y, 0x01, 0x03);
+    nes.testProgram("CPY $01 with [$0001]=2 and Y=1", {OP::CPY_ZPG, 0x01}, 3, {{OPAddr::Y, 1}, {OPAddr::MemZeroPage_1, 2}}, 0x03, OPAddr::Y, 0x01, 0x80);
 }
 
 SCENARIO("Subtract from accumulator with borrow")
@@ -109,4 +125,8 @@ SCENARIO("Subtract from accumulator with borrow")
     // Y-Indexed Absolute
     nes.testProgram("SBC $0200,Y with Y=0 and [$0200]=$01 and ACC=$02 and C=0", {OP::SBC_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0}, {OPAddr::Acc, 0x02}, {OPAddr::MemABS, 0x01}}, 0xC0, OPAddr::Acc, 0x00, 0x03);
     nes.testProgram("SBC $01FF,Y with Y=1 and [$0200]=$FF and ACC=$7F and C=1", {OP::SBC_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 1}, {OPAddr::Acc, 0x7F}, {OPAddr::MemABS, 0xFF}}, 0x03, OPAddr::Acc, 0x80, 0xC0);
+
+    // Zero Page
+    nes.testProgram("SBC $00 with [$0000]=$01 and ACC=2 and C=0", {OP::SBC_ZPG, 0x00}, 3, {{OPAddr::Acc, 0x02}, {OPAddr::MemZeroPage, 0x01}}, 0xC0, OPAddr::Acc, 0x00, 0x03);
+    nes.testProgram("SBC $01 with [$0001]=$FF and ACC=$7F and C=1", {OP::SBC_ZPG, 0x01}, 3, {{OPAddr::Acc, 0x7F}, {OPAddr::MemZeroPage_1, 0xFF}}, 0x03, OPAddr::Acc, 0x80, 0xC0);
 }
