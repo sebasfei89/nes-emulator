@@ -99,35 +99,36 @@ void MOS6502::writeByte(uint16_t address, uint8_t data) {
 
 uint8_t MOS6502::readOperand(AddressingMode addrMode)
 {
-    switch (addrMode) {
-    case AddressingMode::Accumulator: return mA;
-    case AddressingMode::Immediate: return readNextByte();
-    case AddressingMode::Absolute: return readByte(readNextByte() | ((uint16_t)readNextByte() << 8));
-    default:
-        break;
-    }
-    return 0;
+    if (addrMode == AddressingMode::Accumulator)
+        return mA;
+
+    //case AddressingMode::Immediate:
+    //case AddressingMode::Absolute:
+    //case AddressingMode::XIndexedAbsolute:
+    return readByte(getAddress(addrMode));
 }
 
 void MOS6502::writeResult(AddressingMode addrMode, uint8_t value)
 {
     switch (addrMode) {
     case AddressingMode::Absolute:
-        writeByte(readNextByte() | (readNextByte() << 8), value);
+    case AddressingMode::XIndexedAbsolute:
+        writeByte(getAddress(addrMode, true), value);
         break;
     default:
         break;
     }
 }
 
-void MOS6502::readModifyWrite(AddressingMode addrMode, std::function<void(uint8_t& value)> updateFn)
+void MOS6502::readModifyWrite(AddressingMode addrMode, std::function<void(uint8_t &value)> updateFn)
 {
     switch (addrMode) {
     case AddressingMode::Accumulator:
         updateFn(mA);
         break;
-    case AddressingMode::Absolute: {
-        const uint16_t addr = readNextByte() | (readNextByte() << 8);
+    case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute: {
+        const uint16_t addr = getAddress(addrMode, true);
         uint8_t value = readByte(addr);
         updateFn(value);
         writeByte(addr, value);
@@ -135,6 +136,25 @@ void MOS6502::readModifyWrite(AddressingMode addrMode, std::function<void(uint8_
     default:
         break;
     }
+}
+
+uint16_t MOS6502::getAddress(AddressingMode addrMode, bool write) {
+    switch (addrMode) {
+    case AddressingMode::Accumulator:
+        assert(false);
+        break;
+    case AddressingMode::Immediate:
+        return mPC++;
+    case AddressingMode::Absolute:
+        return readNextByte() | (readNextByte() << 8);
+    case AddressingMode::XIndexedAbsolute: {
+        const uint16_t effectiveAddr = (readNextByte() | (readNextByte() << 8));
+        if (write || ((effectiveAddr & 0x00FF) + mX > 0x00FF))
+            ++mCyclesUsed;
+        return effectiveAddr + mX;
+    }
+    }
+    return 0x0000;
 }
 
 void MOS6502::runInstruction() {

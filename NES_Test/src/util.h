@@ -97,7 +97,8 @@ struct NESTest
         case OPAddr::PC_LO:  return cpu->mPC & 0x00FF;
         case OPAddr::SP:  return cpu->mSP;
         case OPAddr::MemABS: return cpuRam(CPU_ABSOLUTE_ADDRESS);
-        //case OPAddr::MemABS_1: return cpuRam(CPU_ABSOLUTE_ADDRESS+1);
+        case OPAddr::MemABS_1: return cpuRam(CPU_ABSOLUTE_ADDRESS+1);
+        case OPAddr::MemABS_IND: return cpuRam(CPU_ABSOLUTE_ADDRESS_WITH_PAGE_CROSS);
         case OPAddr::MemSTK_0: return cpuRam(nes::STACK_ADDRESS);
         case OPAddr::MemSTK_1: return cpuRam(nes::STACK_ADDRESS-1);
         case OPAddr::MemSTK_2: return cpuRam(nes::STACK_ADDRESS-2);

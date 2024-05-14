@@ -6,6 +6,7 @@ void MOS6502::groupOne_ORA(AddressingMode addrMode) {
     switch (addrMode) {
     case AddressingMode::Immediate:
     case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute:
         mA |= readOperand(addrMode);
         updateNZStatusFlags(mA);
         break;
@@ -18,6 +19,7 @@ void MOS6502::groupOne_AND(AddressingMode addrMode) {
     switch (addrMode) {
     case AddressingMode::Immediate:
     case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute:
         mA &= readOperand(addrMode);
         updateNZStatusFlags(mA);
         break;
@@ -30,6 +32,7 @@ void MOS6502::groupOne_EOR(AddressingMode addrMode) {
     switch (addrMode) {
     case AddressingMode::Immediate:
     case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute:
         mA ^= readOperand(addrMode);
         updateNZStatusFlags(mA);
         break;
@@ -41,7 +44,8 @@ void MOS6502::groupOne_EOR(AddressingMode addrMode) {
 void MOS6502::groupOne_ADC(AddressingMode addrMode) {
     switch (addrMode) {
         case AddressingMode::Immediate:
-        case AddressingMode::Absolute: {
+        case AddressingMode::Absolute:
+        case AddressingMode::XIndexedAbsolute: {
             const uint8_t operand = readOperand(addrMode);
             const uint16_t tmp = mA + operand + testFlag(Flags::Carry);
             updateFlag(Flags::Carry, tmp > 0xFF);
@@ -56,20 +60,41 @@ void MOS6502::groupOne_ADC(AddressingMode addrMode) {
 }
 
 void MOS6502::groupOne_STA(AddressingMode addrMode) {
-    if (addrMode == AddressingMode::Absolute) {
+    switch (addrMode) {
+    case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute:
         writeResult(addrMode, mA);
+        break;
+    default:
+        break;
     }
 }
 
 void MOS6502::groupOne_LDA(AddressingMode addrMode) {
-    mA = readOperand(addrMode);
-    updateNZStatusFlags(mA);
+    switch (addrMode)
+    {
+    case AddressingMode::Immediate:
+    case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute:
+        mA = readOperand(addrMode);
+        updateNZStatusFlags(mA);
+        break;
+    case AddressingMode::XIndexedZeroPageIndirect:
+    case AddressingMode::ZeroPage:
+    case AddressingMode::ZeroPageIndirectYIndexed:
+    case AddressingMode::XIndexedZeroPage:
+    case AddressingMode::YIndexedAbsolute:
+        break;
+    default:
+        break;
+    }
 }
 
 void MOS6502::groupOne_CMP(AddressingMode addrMode) {
     switch (addrMode) {
         case AddressingMode::Immediate:
-        case AddressingMode::Absolute: {
+        case AddressingMode::Absolute:
+        case AddressingMode::XIndexedAbsolute: {
             const uint8_t operand = readOperand(addrMode);
             updateFlag(Flags::Carry, operand <= mA);
             updateNZStatusFlags(mA - operand);
@@ -82,7 +107,8 @@ void MOS6502::groupOne_CMP(AddressingMode addrMode) {
 void MOS6502::groupOne_SBC(AddressingMode addrMode) {
     switch (addrMode) {
         case AddressingMode::Immediate:
-        case AddressingMode::Absolute: {
+        case AddressingMode::Absolute:
+        case AddressingMode::XIndexedAbsolute: {
             const uint8_t operand = ~readOperand(addrMode);
             const uint16_t tmp = mA + operand + testBit(mStatusFlags, Flags::Carry);
             updateFlag(Flags::Carry, tmp > 0xFF);

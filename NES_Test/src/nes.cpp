@@ -7,7 +7,6 @@
 //  Immediate
 //  Absolute
 //  Absolute Indirect
-// In-Progress:
 //  X-Indexed Absolute
 // TODO:
 //  Y-Indexed Absolute

@@ -144,9 +144,13 @@ void MOS6502::groupThree_LDY(AddressingMode addrMode) {
         clearFlag(Flags::Overflow);
         ++mCyclesUsed;
         break;
-    default:
+    case AddressingMode::Immediate:
+    case AddressingMode::Absolute:
+    case AddressingMode::XIndexedAbsolute:
         mY = readOperand(addrMode);
         updateNZStatusFlags(mY);
+        break;
+    default:
         break;
     }
 }
