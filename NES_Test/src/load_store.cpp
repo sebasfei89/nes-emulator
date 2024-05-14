@@ -17,6 +17,11 @@ SCENARIO("Load accumulator") {
     nes.testProgram("LDA $0200,X with [$0200]=$11 and X=$00", { OP::LDA_XAB, 0x00, 0x02 }, 4, {{OPAddr::X, 0x00}, {OPAddr::Acc, 0xFF}, {OPAddr::MemABS, 0x00}}, 0x80, OPAddr::Acc, 0x00, 0x02);
     nes.testProgram("LDA $0200,X with [$0201]=$81 and X=$01", { OP::LDA_XAB, 0x00, 0x02 }, 4, {{OPAddr::X, 0x01}, {OPAddr::MemABS_1, 0x81}}, 0x02, OPAddr::Acc, 0x81, 0x80);
     nes.testProgram("LDA $01FF,X with [$0200]=$2A and X=$01", { OP::LDA_XAB, 0xFF, 0x01 }, 5, {{OPAddr::X, 0x01}, {OPAddr::MemABS, 0x2A}}, 0x82, OPAddr::Acc, 0x2A, 0x00);
+
+    // Y-Indexed Absolute
+    nes.testProgram("LDA $0200,Y with [$0200]=$00 and Y=0", {OP::LDA_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0x00}, {OPAddr::Acc, 0xFF}, {OPAddr::MemABS, 0x00}}, 0x80, OPAddr::Acc, 0x00, 0x02);
+    nes.testProgram("LDA $0200,Y with [$0201]=$81 and Y=1", {OP::LDA_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0x01}, {OPAddr::MemABS_1, 0x81}}, 0x02, OPAddr::Acc, 0x81, 0x80);
+    nes.testProgram("LDA $01FF,Y with [$0200]=$2A and Y=1", {OP::LDA_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 0x01}, {OPAddr::MemABS, 0x2A}}, 0x82, OPAddr::Acc, 0x2A, 0x00);
 }
 
 SCENARIO("Load X register") {
@@ -31,6 +36,11 @@ SCENARIO("Load X register") {
     nes.testProgram("LDX $0200 with [$0200] = $11", { OP::LDX_ABS, 0x00, 0x02 }, 4, OPAddr::MemABS, 0x11, 0x82, OPAddr::X, 0x11, 0x00);
     nes.testProgram("LDX $0200 with [$0200] = $81", { OP::LDX_ABS, 0x00, 0x02 }, 4, OPAddr::MemABS, 0x81, 0x00, OPAddr::X, 0x81, 0x80);
     nes.testProgram("LDX $0200 with [$0200] = $00", { OP::LDX_ABS, 0x00, 0x02 }, 4, OPAddr::MemABS, 0x00, 0x00, OPAddr::X, 0x00, 0x02);
+
+    // Y-Indexed Absolute
+    nes.testProgram("LDX $0200,Y with [$0200]=$00 and Y=0", {OP::LDX_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0x00}, {OPAddr::X, 0xFF}, {OPAddr::MemABS, 0x00} }, 0x80, OPAddr::X, 0x00, 0x02);
+    nes.testProgram("LDX $0200,Y with [$0201]=$81 and Y=1", {OP::LDX_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0x01}, {OPAddr::MemABS_1, 0x81} }, 0x02, OPAddr::X, 0x81, 0x80);
+    nes.testProgram("LDX $01FF,Y with [$0200]=$2A and Y=1", {OP::LDX_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 0x01}, {OPAddr::MemABS, 0x2A} }, 0x82, OPAddr::X, 0x2A, 0x00);
 }
 
 SCENARIO("Load Y register") {
@@ -61,6 +71,9 @@ SCENARIO("Store accumulator")
 
     // X-Indexed Absolute
     nes.testProgram("STA $01FF,X with ACC=$8F and X=$01", { OP::STA_XAB, 0xFF, 0x01 }, 5, {{OPAddr::Acc, 0x8F}, {OPAddr::X, 0x01}}, 0x00, OPAddr::MemABS, 0x8F, 0x00);
+
+    // Y-Indexed Absolute
+    nes.testProgram("STA $01FF,Y with ACC=$8F and Y=$01", { OP::STA_YAB, 0xFF, 0x01 }, 5, {{OPAddr::Acc, 0x8F}, {OPAddr::Y, 0x01}}, 0x00, OPAddr::MemABS, 0x8F, 0x00);
 }
 
 SCENARIO("Store X register")
@@ -72,7 +85,7 @@ SCENARIO("Store X register")
     nes.testProgram("STX $0200 with ACC = 0x00", { OP::STX_ABS, 0x00, 0x02 }, 4, OPAddr::X, 0x00, 0x00, OPAddr::MemABS, 0x00, 0x00);
 }
 
-SCENARIO("Store y register")
+SCENARIO("Store Y register")
 {
     NESTest nes;
 

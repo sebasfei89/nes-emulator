@@ -1,9 +1,11 @@
 #pragma once
 
 #include "NES/nes.h"
+#include "NES/opCodes.h"
+
 #include <Catch2/catch.hpp>
 
-using OP = nes::MOS6502;
+namespace OP = nes::opcode;
 
 enum class OPAddr : uint8_t {
     // Register addressing:

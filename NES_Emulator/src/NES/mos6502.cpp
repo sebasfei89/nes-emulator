@@ -105,6 +105,7 @@ uint8_t MOS6502::readOperand(AddressingMode addrMode)
     //case AddressingMode::Immediate:
     //case AddressingMode::Absolute:
     //case AddressingMode::XIndexedAbsolute:
+    //case AddressingMode::YIndexedAbsolute:
     return readByte(getAddress(addrMode));
 }
 
@@ -113,6 +114,7 @@ void MOS6502::writeResult(AddressingMode addrMode, uint8_t value)
     switch (addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
+    case AddressingMode::YIndexedAbsolute:
         writeByte(getAddress(addrMode, true), value);
         break;
     default:
@@ -153,7 +155,14 @@ uint16_t MOS6502::getAddress(AddressingMode addrMode, bool write) {
             ++mCyclesUsed;
         return effectiveAddr + mX;
     }
+    case AddressingMode::YIndexedAbsolute: {
+        const uint16_t effectiveAddr = (readNextByte() | (readNextByte() << 8));
+        if (write || ((effectiveAddr & 0x00FF) + mY > 0x00FF))
+            ++mCyclesUsed;
+        return effectiveAddr + mY;
     }
+    }
+
     return 0x0000;
 }
 

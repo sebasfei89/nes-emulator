@@ -17,6 +17,11 @@ SCENARIO("OR with accumulator") {
     nes.testProgram("ORA $0200,X with X=0, ACC=3 and [$0200]=$30", { OP::ORA_XAB, 0x00, 0x02 }, 4, {{OPAddr::X, 0}, {OPAddr::Acc, 0x03}, {OPAddr::MemABS, 0x30} }, 0x82, OPAddr::Acc, 0x33, 0x00);
     nes.testProgram("ORA $0200,X with X=1, ACC=3 and [$0201]=$80", { OP::ORA_XAB, 0x00, 0x02 }, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0x03}, {OPAddr::MemABS_1, 0x80} }, 0x02, OPAddr::Acc, 0x83, 0x80);
     nes.testProgram("ORA $01FF,X with X=1, ACC=0 and [$0200]=$00", { OP::ORA_XAB, 0xFF, 0x01 }, 5, {{OPAddr::X, 1}, {OPAddr::Acc, 0x00}, {OPAddr::MemABS, 0x00} }, 0x80, OPAddr::Acc, 0x00, 0x02);
+
+    // Y-Indexed Absolute
+    nes.testProgram("ORA $0200,Y with Y=0, ACC=3 and [$0200]=$30", {OP::ORA_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0}, {OPAddr::Acc, 0x03}, {OPAddr::MemABS, 0x30}}, 0x82, OPAddr::Acc, 0x33, 0x00);
+    nes.testProgram("ORA $0200,Y with Y=1, ACC=3 and [$0201]=$80", {OP::ORA_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 1}, {OPAddr::Acc, 0x03}, {OPAddr::MemABS_1, 0x80}}, 0x02, OPAddr::Acc, 0x83, 0x80);
+    nes.testProgram("ORA $01FF,Y with Y=1, ACC=0 and [$0200]=$00", {OP::ORA_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 1}, {OPAddr::Acc, 0x00}, {OPAddr::MemABS, 0x00}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 }
 
 SCENARIO("Exclusive OR with accumulator") {
@@ -36,6 +41,11 @@ SCENARIO("Exclusive OR with accumulator") {
     nes.testProgram("EOR $0200,X with X=0, ACC=$07 and [$0200]=$0F", { OP::EOR_XAB, 0x00, 0x02 }, 4, {{OPAddr::X, 0}, {OPAddr::Acc, 0x07}, {OPAddr::MemABS, 0x0F}}, 0x82, OPAddr::Acc, 0x08, 0x00);
     nes.testProgram("EOR $0200,X with X=1, ACC=$70 and [$0201]=$F0", { OP::EOR_XAB, 0x00, 0x02 }, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0x70}, {OPAddr::MemABS_1, 0xF0}}, 0x02, OPAddr::Acc, 0x80, 0x80);
     nes.testProgram("EOR $01FF,X with X=1, ACC=$F0 and [$0200]=$F0", { OP::EOR_XAB, 0xFF, 0x01 }, 5, {{OPAddr::X, 1}, {OPAddr::Acc, 0xF0}, {OPAddr::MemABS, 0xF0}}, 0x80, OPAddr::Acc, 0x00, 0x02);
+
+    // Y-Indexed Absolute
+    nes.testProgram("EOR $0200,Y with Y=0, ACC=$07 and [$0200]=$0F", {OP::EOR_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 0}, {OPAddr::Acc, 0x07}, {OPAddr::MemABS, 0x0F}}, 0x82, OPAddr::Acc, 0x08, 0x00);
+    nes.testProgram("EOR $0200,Y with Y=1, ACC=$70 and [$0201]=$F0", {OP::EOR_YAB, 0x00, 0x02}, 4, {{OPAddr::Y, 1}, {OPAddr::Acc, 0x70}, {OPAddr::MemABS_1, 0xF0}}, 0x02, OPAddr::Acc, 0x80, 0x80);
+    nes.testProgram("EOR $01FF,Y with Y=1, ACC=$F0 and [$0200]=$F0", {OP::EOR_YAB, 0xFF, 0x01}, 5, {{OPAddr::Y, 1}, {OPAddr::Acc, 0xF0}, {OPAddr::MemABS, 0xF0}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 }
 
 SCENARIO("AND with accumulator") {
@@ -55,6 +65,11 @@ SCENARIO("AND with accumulator") {
     nes.testProgram("AND $0200,X with X=0, ACC=$0F and [$0200]=$03", {OP::AND_XAB, 0x00, 0x02}, 4, {{OPAddr::X, 0}, {OPAddr::Acc, 0x0F}, {OPAddr::MemABS, 0x03}}, 0x82, OPAddr::Acc, 0x03, 0x00);
     nes.testProgram("AND $0200,X with X=1, ACC=$FF and [$0201]=$80", {OP::AND_XAB, 0x00, 0x02}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0xFF}, {OPAddr::MemABS_1, 0x80}}, 0x02, OPAddr::Acc, 0x80, 0x80);
     nes.testProgram("AND $01FF,X with X=1, ACC=$F0 and [$0200]=$0F", {OP::AND_XAB, 0xFF, 0x01}, 5, {{OPAddr::X, 1}, {OPAddr::Acc, 0xF0}, {OPAddr::MemABS, 0x0F}}, 0x80, OPAddr::Acc, 0x00, 0x02);
+
+    // Y-Indexed Absolute
+    nes.testProgram("AND $0200,Y with Y=0, ACC=$0F and [$0200]=$03", { OP::AND_YAB, 0x00, 0x02 }, 4, {{OPAddr::Y, 0}, {OPAddr::Acc, 0x0F}, {OPAddr::MemABS, 0x03}}, 0x82, OPAddr::Acc, 0x03, 0x00);
+    nes.testProgram("AND $0200,Y with Y=1, ACC=$FF and [$0201]=$80", { OP::AND_YAB, 0x00, 0x02 }, 4, {{OPAddr::Y, 1}, {OPAddr::Acc, 0xFF}, {OPAddr::MemABS_1, 0x80}}, 0x02, OPAddr::Acc, 0x80, 0x80);
+    nes.testProgram("AND $01FF,Y with Y=1, ACC=$F0 and [$0200]=$0F", { OP::AND_YAB, 0xFF, 0x01 }, 5, {{OPAddr::Y, 1}, {OPAddr::Acc, 0xF0}, {OPAddr::MemABS, 0x0F}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 }
 
 SCENARIO("Test bits with accumulator") {

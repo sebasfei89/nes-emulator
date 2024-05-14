@@ -113,6 +113,9 @@ void MOS6502::groupTwo_STX(AddressingMode addrMode) {
 }
 
 void MOS6502::groupTwo_LDX(AddressingMode addrMode) {
+    if (addrMode == AddressingMode::XIndexedAbsolute)
+        addrMode = AddressingMode::YIndexedAbsolute;
+
     switch (addrMode) {
     case AddressingMode::Accumulator: // TAX_IMPLIED
         mX = mA;
@@ -124,9 +127,13 @@ void MOS6502::groupTwo_LDX(AddressingMode addrMode) {
         updateNZStatusFlags(mX);
         ++mCyclesUsed;
         break;
-    default:
+    case AddressingMode::Immediate:
+    case AddressingMode::Absolute:
+    case AddressingMode::YIndexedAbsolute:
         mX = readOperand(addrMode);
         updateNZStatusFlags(mX);
+        break;
+    default:
         break;
     }
 }
