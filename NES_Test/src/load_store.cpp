@@ -54,6 +54,10 @@ SCENARIO("Load X register") {
     // Zero Page
     nes.testProgram("LDX $00 with [$0000]=$11", {OP::LDX_ZPG, 0x00}, 3, {{OPAddr::MemZeroPage, 0x00}, {OPAddr::X, 0xFF}}, 0x80, OPAddr::X, 0x00, 0x02);
     nes.testProgram("LDX $01 with [$0001]=$81", {OP::LDX_ZPG, 0x01}, 3, {{OPAddr::MemZeroPage_1, 0x81}, {OPAddr::X, 0xFF}}, 0x02, OPAddr::X, 0x81, 0x80);
+
+    // Y-Indexed Zero Page
+    nes.testProgram("LDX $00,Y with [$0001]=$11 and Y=$01", {OP::LDX_YZP, 0 }, 4, {{OPAddr::MemZeroPage_1, 0x11}, {OPAddr::X, 0xFF}, {OPAddr::Y, 1}}, 0x80, OPAddr::X, 0x11, 0x00);
+    nes.testProgram("LDX $01,Y with [$0000]=$81 and Y=$FF", {OP::LDX_YZP, 1 }, 4, {{OPAddr::MemZeroPage, 0x81}, {OPAddr::X, 0xFF}, {OPAddr::Y, 0xFF}}, 0x02, OPAddr::X, 0x81, 0x80);
 }
 
 SCENARIO("Load Y register") {
@@ -108,11 +112,14 @@ SCENARIO("Store X register")
     NESTest nes;
 
     // Absolute
-    nes.testProgram("STX $0200 with X=0x8F", { OP::STX_ABS, 0x00, 0x02 }, 4, OPAddr::X, 0x8F, 0x00, OPAddr::MemABS, 0x8F, 0x00);
-    nes.testProgram("STX $0200 with X=0x00", { OP::STX_ABS, 0x00, 0x02 }, 4, OPAddr::X, 0x00, 0x00, OPAddr::MemABS, 0x00, 0x00);
+    nes.testProgram("STX $0200 with X=$8F", { OP::STX_ABS, 0x00, 0x02 }, 4, OPAddr::X, 0x8F, 0x00, OPAddr::MemABS, 0x8F, 0x00);
+    nes.testProgram("STX $0200 with X=$00", { OP::STX_ABS, 0x00, 0x02 }, 4, OPAddr::X, 0x00, 0x00, OPAddr::MemABS, 0x00, 0x00);
 
     // Zero Page
     nes.testProgram("STX $01 with X=$8F", {OP::STX_ZPG, 0x01}, 3, OPAddr::X, 0x8F, 0x00, OPAddr::MemZeroPage_1, 0x8F, 0x00);
+
+    // Y-Indexed Zero Page
+    nes.testProgram("STX $00,Y with X=$8F and Y=1", {OP::STX_YZP, 0x00 }, 4, {{OPAddr::Y, 1}, {OPAddr::X, 0x8F}}, 0x00, OPAddr::MemZeroPage_1, 0x8F, 0x00);
 }
 
 SCENARIO("Store Y register")
@@ -120,12 +127,12 @@ SCENARIO("Store Y register")
     NESTest nes;
 
     // Absolute
-    nes.testProgram("STY $0200 with ACC = 0x8F", { OP::STY_ABS, 0x00, 0x02 }, 4, OPAddr::Y, 0x8F, 0x00, OPAddr::MemABS, 0x8F, 0x00);
-    nes.testProgram("STY $0200 with ACC = 0x00", { OP::STY_ABS, 0x00, 0x02 }, 4, OPAddr::Y, 0x00, 0x00, OPAddr::MemABS, 0x00, 0x00);
+    nes.testProgram("STY $0200 with ACC=$8F", { OP::STY_ABS, 0x00, 0x02 }, 4, OPAddr::Y, 0x8F, 0x00, OPAddr::MemABS, 0x8F, 0x00);
+    nes.testProgram("STY $0200 with ACC=$00", { OP::STY_ABS, 0x00, 0x02 }, 4, OPAddr::Y, 0x00, 0x00, OPAddr::MemABS, 0x00, 0x00);
 
     // Zero Page
     nes.testProgram("STY $01 with Y=$8F", {OP::STY_ZPG, 0x01}, 3, OPAddr::Y, 0x8F, 0x00, OPAddr::MemZeroPage_1, 0x8F, 0x00);
 
     // X-Indexed Zero Page
-    nes.testProgram("STY $00,X with ACC=$8F and X=1", {OP::STY_XZP, 0x00}, 4, {{OPAddr::Y, 0x8F}, {OPAddr::X, 1}}, 0x00, OPAddr::MemZeroPage_1, 0x8F, 0x00);
+    nes.testProgram("STY $00,X with and X=1 and Y=$8F", {OP::STY_XZP, 0x00}, 4, {{OPAddr::Y, 0x8F}, {OPAddr::X, 1}}, 0x00, OPAddr::MemZeroPage_1, 0x8F, 0x00);
 }

@@ -97,6 +97,9 @@ void MOS6502::groupTwo_ROR(AddressingMode addrMode) {
 }
 
 void MOS6502::groupTwo_STX(AddressingMode addrMode) {
+    if (addrMode == AddressingMode::XIndexedZeroPage)
+        addrMode = AddressingMode::YIndexedZeroPage;
+
     switch (addrMode) {
     case AddressingMode::Immediate:
         break;
@@ -116,6 +119,7 @@ void MOS6502::groupTwo_STX(AddressingMode addrMode) {
         break;
     case AddressingMode::Absolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::YIndexedZeroPage:
         writeResult(addrMode, mX);
         break;
     default:
@@ -126,6 +130,8 @@ void MOS6502::groupTwo_STX(AddressingMode addrMode) {
 void MOS6502::groupTwo_LDX(AddressingMode addrMode) {
     if (addrMode == AddressingMode::XIndexedAbsolute)
         addrMode = AddressingMode::YIndexedAbsolute;
+    else if (addrMode == AddressingMode::XIndexedZeroPage)
+        addrMode = AddressingMode::YIndexedZeroPage;
 
     switch (addrMode) {
     case AddressingMode::Accumulator: // TAX_IMPLIED
@@ -142,6 +148,7 @@ void MOS6502::groupTwo_LDX(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::YIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::YIndexedZeroPage:
         mX = readOperand(addrMode);
         updateNZStatusFlags(mX);
         break;
