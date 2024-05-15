@@ -26,6 +26,10 @@ SCENARIO("OR with accumulator") {
     // Zero Page
     nes.testProgram("ORA $00 with ACC=$03 and [$0000]=$80", {OP::ORA_ZPG, 0x00}, 3, {{OPAddr::Acc, 0x03}, {OPAddr::MemZeroPage, 0x80}}, 0x02, OPAddr::Acc, 0x83, 0x80);
     nes.testProgram("ORA $01 with ACC=$00 and [$0001]=$00", {OP::ORA_ZPG, 0x01}, 3, {{OPAddr::Acc, 0x00}, {OPAddr::MemZeroPage_1, 0x00}}, 0x80, OPAddr::Acc, 0x00, 0x02);
+
+    // X-Indexed Zero Page
+    nes.testProgram("ORA $00,X with X=1, ACC=3 and [$0001]=$80", {OP::ORA_XZP, 0x00}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 3}, {OPAddr::MemZeroPage_1, 0x80}}, 0x02, OPAddr::Acc, 0x83, 0x80);
+    nes.testProgram("ORA $FF,X with X=1, ACC=0 and [$0000]=$00", {OP::ORA_XZP, 0xFF}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0}, {OPAddr::MemZeroPage, 0x00}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 }
 
 SCENARIO("Exclusive OR with accumulator") {
@@ -54,6 +58,10 @@ SCENARIO("Exclusive OR with accumulator") {
     // Zero Page
     nes.testProgram("EOR $00 with ACC=$70 and [$0000]=$F0", {OP::EOR_ZPG, 0x00}, 3, {{OPAddr::Acc, 0x70}, {OPAddr::MemZeroPage, 0xF0}}, 0x02, OPAddr::Acc, 0x80, 0x80);
     nes.testProgram("EOR $01 with ACC=$F0 and [$0001]=$F0", {OP::EOR_ZPG, 0x01}, 3, {{OPAddr::Acc, 0xF0}, {OPAddr::MemZeroPage_1, 0xF0}}, 0x80, OPAddr::Acc, 0x00, 0x02);
+
+    // X-Indexed Zero Page
+    nes.testProgram("EOR $00,X with X=1, ACC=$70 and [$0001]=$F0", {OP::EOR_XZP, 0x00}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0x70}, {OPAddr::MemZeroPage_1, 0xF0}}, 0x02, OPAddr::Acc, 0x80, 0x80);
+    nes.testProgram("EOR $FF,X with X=1, ACC=$F0 and [$0000]=$F0", {OP::EOR_XZP, 0xFF}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0xF0}, {OPAddr::MemZeroPage, 0xF0}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 }
 
 SCENARIO("AND with accumulator") {
@@ -82,6 +90,10 @@ SCENARIO("AND with accumulator") {
     // Zero Page
     nes.testProgram("AND $00 with ACC=$FF and [$0000]=$80", {OP::AND_ZPG, 0x00}, 3, {{OPAddr::Acc, 0xFF}, {OPAddr::MemZeroPage, 0x80}}, 0x02, OPAddr::Acc, 0x80, 0x80);
     nes.testProgram("AND $01 with ACC=$F0 and [$0001]=$0F", {OP::AND_ZPG, 0x01}, 3, {{OPAddr::Acc, 0xF0}, {OPAddr::MemZeroPage_1, 0x0F}}, 0x80, OPAddr::Acc, 0x00, 0x02);
+
+    // X-Indexed Zero Page
+    nes.testProgram("AND $00,X with X=1, ACC=$FF and [$0001]=$80", {OP::AND_XZP, 0x00}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0xFF}, {OPAddr::MemZeroPage_1, 0x80}}, 0x02, OPAddr::Acc, 0x80, 0x80);
+    nes.testProgram("AND $FF,X with X=1, ACC=$F0 and [$0000]=$0F", {OP::AND_XZP, 0xFF}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0xF0}, {OPAddr::MemZeroPage, 0x0F}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 }
 
 SCENARIO("Test bits with accumulator") {

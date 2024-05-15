@@ -126,11 +126,11 @@ void MOS6502::groupThree_STY(AddressingMode addrMode) {
         ++mCyclesUsed;
         break;
     case AddressingMode::XIndexedAbsolute:
-    case AddressingMode::XIndexedZeroPage:
         break;
     default:
         //case AddressingMode::Absolute:
         //case AddressingMode::ZeroPage:
+        //case AddressingMode::XIndexedZeroPage:
         writeResult(addrMode, mY);
         break;
     }
@@ -152,6 +152,7 @@ void MOS6502::groupThree_LDY(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         mY = readOperand(addrMode);
         updateNZStatusFlags(mY);
         break;

@@ -10,8 +10,8 @@
 //  X-Indexed Absolute
 //  Y-Indexed Absolute
 //  Zero Page
-// TODO:
 //  X-Indexed Zero Page
+// TODO:
 //  Y-Indexed Zero Page
 //  X-Indexed Zero Page Indirect
 //  Zero Page Indirect Y-Indexed

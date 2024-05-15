@@ -12,6 +12,7 @@ void MOS6502::groupTwo_ASL(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         readModifyWrite(addrMode, [&](uint8_t &operand) {
                 updateFlag(Flags::Carry, operand & 0x80);
                 operand <<= 1;
@@ -34,6 +35,7 @@ void MOS6502::groupTwo_ROL(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         readModifyWrite(addrMode, [&](uint8_t& operand) {
                 uint8_t tmp = (operand << 1) | testFlag(Flags::Carry);
                 updateFlag(Flags::Carry, operand & 0x80);
@@ -57,6 +59,7 @@ void MOS6502::groupTwo_LSR(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         readModifyWrite(addrMode, [&](uint8_t& operand) {
                 updateFlag(Flags::Carry, operand & 0x01);
                 operand >>= 1;
@@ -79,6 +82,7 @@ void MOS6502::groupTwo_ROR(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         readModifyWrite(addrMode, [&](uint8_t& operand) {
                 uint8_t tmp = (operand >> 1) | testFlag(Flags::Carry) << 7;
                 updateFlag(Flags::Carry, operand & 0x01);
@@ -155,6 +159,7 @@ void MOS6502::groupTwo_DEC(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         readModifyWrite(addrMode, [this](uint8_t& operand) {
                 --operand;
                 updateNZStatusFlags(operand);
@@ -174,6 +179,7 @@ void MOS6502::groupTwo_INC(AddressingMode addrMode) {
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         readModifyWrite(addrMode, [this](uint8_t& operand) {
                 ++operand;
                 updateNZStatusFlags(operand);

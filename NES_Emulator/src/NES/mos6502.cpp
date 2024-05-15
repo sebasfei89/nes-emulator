@@ -117,6 +117,7 @@ void MOS6502::writeResult(AddressingMode addrMode, uint8_t value)
     case AddressingMode::XIndexedAbsolute:
     case AddressingMode::YIndexedAbsolute:
     case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage:
         writeByte(getAddress(addrMode, true), value);
         break;
     default:
@@ -132,7 +133,8 @@ void MOS6502::readModifyWrite(AddressingMode addrMode, std::function<void(uint8_
         break;
     case AddressingMode::Absolute:
     case AddressingMode::XIndexedAbsolute:
-    case AddressingMode::ZeroPage: {
+    case AddressingMode::ZeroPage:
+    case AddressingMode::XIndexedZeroPage: {
         const uint16_t addr = getAddress(addrMode, true);
         uint8_t value = readByte(addr);
         updateFn(value);
@@ -166,6 +168,9 @@ uint16_t MOS6502::getAddress(AddressingMode addrMode, bool write) {
     }
     case AddressingMode::ZeroPage:
         return readNextByte();
+    case AddressingMode::XIndexedZeroPage:
+        ++mCyclesUsed;
+        return (uint8_t)(readNextByte() + mX);
     }
 
     return 0x0000;
@@ -173,24 +178,14 @@ uint16_t MOS6502::getAddress(AddressingMode addrMode, bool write) {
 
 void MOS6502::runInstruction() {
     mCyclesUsed = 0;
-    const uint8_t instruction = readNextByte();
-
+    const uint8_t instruction = readNextByte(); // aaabbbcc
     const uint8_t aaa = ((uint8_t)instruction & 0b1110'0000) >> 5; // OP code from group
     const uint8_t bbb = ((uint8_t)instruction & 0b0001'1100) >> 2; // Addressing mode
     const uint8_t cc =  ((uint8_t)instruction & 0b0000'0011) >> 0; // Group
-    if (cc == 0x01) // Group one
-    {
+    if (cc != 0x03) {
         (this->*sGroupInstructions[cc][aaa])(sGroupAddressingModes[cc][bbb]);
     }
-    else if (cc == 0x02) // Group two
-    {
-        (this->*sGroupInstructions[cc][aaa])(sGroupAddressingModes[cc][bbb]);
-    }
-    else if (cc == 0x00) // Group three
-    {
-        (this->*sGroupInstructions[cc][aaa])(sGroupAddressingModes[cc][bbb]);
-    }
-    else { // (((uint8_t)instruction & 0x03) == 0x03)
+    else {
         return; // Undocumented instructions
     }
 }

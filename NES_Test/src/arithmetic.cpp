@@ -31,6 +31,10 @@ SCENARIO("Add to accumulator with carry")
     // Zero Page
     nes.testProgram("ADC $00 with [$0000]=1 and ACC=$FE and C=1", {OP::ADC_ZPG, 0x00}, 3, {{OPAddr::Acc, 0xFE}, {OPAddr::MemZeroPage, 0x01}}, 0xC1, OPAddr::Acc, 0x00, 0x03);
     nes.testProgram("ADC $01 with [$0001]=1 and ACC=$7F and C=0", {OP::ADC_ZPG, 0x01}, 3, {{OPAddr::Acc, 0x7F}, {OPAddr::MemZeroPage_1, 0x01}}, 0x02, OPAddr::Acc, 0x80, 0xC0);
+
+    // X-Indexed Zero Page
+    nes.testProgram("ADC $00,X with X=1 and [$0001]=1 and ACC=$FE and C=1", {OP::ADC_XZP, 0x00}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0xFE}, {OPAddr::MemZeroPage_1, 1}}, 0xC1, OPAddr::Acc, 0x00, 0x03);
+    nes.testProgram("ADC $FF,X with X=1 and [$0000]=1 and ACC=$7F and C=0", {OP::ADC_XZP, 0xFF}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0x7F}, {OPAddr::MemZeroPage, 1}}, 0x02, OPAddr::Acc, 0x80, 0xC0);
 }
 
 SCENARIO("Compare with accumulator")
@@ -60,6 +64,10 @@ SCENARIO("Compare with accumulator")
     // Zero Page
     nes.testProgram("CMP $00 with [$0000]=1 and ACC=1", {OP::CMP_ZPG, 0x00}, 3, {{OPAddr::Acc, 1}, {OPAddr::MemZeroPage, 1}}, 0x80, OPAddr::Acc, 0x01, 0x03);
     nes.testProgram("CMP $01 with [$0001]=2 and ACC=1", {OP::CMP_ZPG, 0x01}, 3, {{OPAddr::Acc, 1}, {OPAddr::MemZeroPage_1, 2}}, 0x03, OPAddr::Acc, 0x01, 0x80);
+
+    // X-Indexed Zero Page
+    nes.testProgram("CMP $00,X with X=1 and [$0001]=1 and ACC=1", {OP::CMP_XZP, 0x00}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 1}, {OPAddr::MemZeroPage_1, 0x01}}, 0x80, OPAddr::Acc, 1, 0x03);
+    nes.testProgram("CMP $FF,X with X=1 and [$0000]=2 and ACC=1", {OP::CMP_XZP, 0xFF}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 1}, {OPAddr::MemZeroPage, 0x02}}, 0x03, OPAddr::Acc, 1, 0x80);
 }
 
 SCENARIO("Compare with X register")
@@ -129,4 +137,8 @@ SCENARIO("Subtract from accumulator with borrow")
     // Zero Page
     nes.testProgram("SBC $00 with [$0000]=$01 and ACC=2 and C=0", {OP::SBC_ZPG, 0x00}, 3, {{OPAddr::Acc, 0x02}, {OPAddr::MemZeroPage, 0x01}}, 0xC0, OPAddr::Acc, 0x00, 0x03);
     nes.testProgram("SBC $01 with [$0001]=$FF and ACC=$7F and C=1", {OP::SBC_ZPG, 0x01}, 3, {{OPAddr::Acc, 0x7F}, {OPAddr::MemZeroPage_1, 0xFF}}, 0x03, OPAddr::Acc, 0x80, 0xC0);
+
+    // X-Indexed Zero Page
+    nes.testProgram("SBC $00,X with X=1 and [$0001]=$01 and ACC=$02 and C=0", {OP::SBC_XZP, 0x00}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0x02}, {OPAddr::MemZeroPage_1, 0x01}}, 0xC0, OPAddr::Acc, 0x00, 0x03);
+    nes.testProgram("SBC $FF,X with X=1 and [$0000]=$FF and ACC=$7F and C=1", {OP::SBC_XZP, 0xFF}, 4, {{OPAddr::X, 1}, {OPAddr::Acc, 0x7F}, {OPAddr::MemZeroPage, 0xFF}}, 0x03, OPAddr::Acc, 0x80, 0xC0);
 }
