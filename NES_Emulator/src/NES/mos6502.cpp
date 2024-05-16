@@ -8,14 +8,14 @@ namespace nes {
 #define OP(FN, AM) InstructionTableEntry{&op##FN, AddressingMode::AM}
 std::array<MOS6502::InstructionGroup, 3> MOS6502::sInstructionGroups = {
     InstructionGroup{
-        InstructionTableRow{ OP(BRK, Implied  ), OP(NOP, ZeroPage), OP(PHP, Implied), OP(NOP, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(CLC, Implied), OP(NOP, XIndexedAbsolute) },
-        InstructionTableRow{ OP(JSR, Immediate), OP(BIT, ZeroPage), OP(PLP, Implied), OP(BIT, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(SEC, Implied), OP(NOP, XIndexedAbsolute) },
-        InstructionTableRow{ OP(RTI, Implied  ), OP(NOP, ZeroPage), OP(PHA, Implied), OP(JMP, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(CLI, Implied), OP(NOP, XIndexedAbsolute) },
-        InstructionTableRow{ OP(RTS, Implied  ), OP(NOP, ZeroPage), OP(PLA, Implied), OP(JMP, AbsoluteIndirect), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(SEI, Implied), OP(NOP, XIndexedAbsolute) },
-        InstructionTableRow{ OP(NOP, Immediate), OP(STY, ZeroPage), OP(DEY, Implied), OP(STY, Absolute        ), OP(NOP, Implied), OP(STY, XIndexedZeroPage), OP(TYA, Implied), OP(NOP, XIndexedAbsolute) },
-        InstructionTableRow{ OP(LDY, Immediate), OP(LDY, ZeroPage), OP(TAY, Implied), OP(LDY, Absolute        ), OP(NOP, Implied), OP(LDY, XIndexedZeroPage), OP(CLV, Implied), OP(LDY, XIndexedAbsolute) },
-        InstructionTableRow{ OP(CPY, Immediate), OP(CPY, ZeroPage), OP(INY, Implied), OP(CPY, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(CLD, Implied), OP(NOP, XIndexedAbsolute) },
-        InstructionTableRow{ OP(CPX, Immediate), OP(CPX, ZeroPage), OP(INX, Implied), OP(CPX, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(SED, Implied), OP(NOP, XIndexedAbsolute) }
+        InstructionTableRow{ OP(BRK, Implied  ), OP(NOP, ZeroPage), OP(PHP, Implied), OP(NOP, Absolute        ), OP(BPL, Relative), OP(NOP, XIndexedZeroPage), OP(CLC, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(JSR, Immediate), OP(BIT, ZeroPage), OP(PLP, Implied), OP(BIT, Absolute        ), OP(BMI, Relative), OP(NOP, XIndexedZeroPage), OP(SEC, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(RTI, Implied  ), OP(NOP, ZeroPage), OP(PHA, Implied), OP(JMP, Absolute        ), OP(BVC, Relative), OP(NOP, XIndexedZeroPage), OP(CLI, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(RTS, Implied  ), OP(NOP, ZeroPage), OP(PLA, Implied), OP(JMP, AbsoluteIndirect), OP(BVS, Relative), OP(NOP, XIndexedZeroPage), OP(SEI, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(STY, ZeroPage), OP(DEY, Implied), OP(STY, Absolute        ), OP(BCC, Relative), OP(STY, XIndexedZeroPage), OP(TYA, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(LDY, Immediate), OP(LDY, ZeroPage), OP(TAY, Implied), OP(LDY, Absolute        ), OP(BCS, Relative), OP(LDY, XIndexedZeroPage), OP(CLV, Implied), OP(LDY, XIndexedAbsolute) },
+        InstructionTableRow{ OP(CPY, Immediate), OP(CPY, ZeroPage), OP(INY, Implied), OP(CPY, Absolute        ), OP(BNE, Relative), OP(NOP, XIndexedZeroPage), OP(CLD, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(CPX, Immediate), OP(CPX, ZeroPage), OP(INX, Implied), OP(CPX, Absolute        ), OP(BEQ, Relative), OP(NOP, XIndexedZeroPage), OP(SED, Implied), OP(NOP, XIndexedAbsolute) }
     },
     InstructionGroup{
         InstructionTableRow{ OP(ORA, XIndexedZeroPageIndirect), OP(ORA, ZeroPage), OP(ORA, Immediate), OP(ORA, Absolute), OP(ORA, ZeroPageIndirectYIndexed), OP(ORA, XIndexedZeroPage), OP(ORA, YIndexedAbsolute), OP(ORA, XIndexedAbsolute) },
@@ -94,6 +94,7 @@ void MOS6502::readModifyWrite(AddressingMode addrMode, UpdateFn updateFn)
 uint16_t MOS6502::getAddress(AddressingMode addrMode, bool write) {
     switch (addrMode) {
         case AddressingMode::Immediate:                               return mPC++;
+        case AddressingMode::Relative:                                return mPC++;
         case AddressingMode::Absolute:                                return readAddressAbs();
         case AddressingMode::AbsoluteIndirect:                        return readAddressInd(readAddressAbs());
         case AddressingMode::XIndexedAbsolute:                        return handlePageCross(readAddressAbs(), mX, write);

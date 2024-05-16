@@ -25,7 +25,7 @@ public:
         Absolute, XIndexedAbsolute, YIndexedAbsolute, AbsoluteIndirect
     };
 
-    enum Flags : uint8_t {
+    enum class Flags : uint8_t {
         Carry = 0,
         Zero = 1,
         Interrupt = 2,
@@ -82,20 +82,21 @@ private:
     void runInstruction();
 
     void updateNZStatusFlags(uint8_t value) {
-        updateBit(mStatusFlags, Flags::Zero, !value);
-        updateBit(mStatusFlags, Flags::Negative, value & 0x80);
+        updateBit(mStatusFlags, (uint8_t)Flags::Zero, !value);
+        updateBit(mStatusFlags, (uint8_t)Flags::Negative, value & 0x80);
     }
 
     friend class Bus;
     void onConnect(Bus* bus) { mBus = bus; }
     void onDisconnect() { mBus = nullptr; }
 
-    uint8_t testFlag(Flags flag) const { return testBit(mStatusFlags, Flags::Carry); }
-    void setFlag(Flags flag) { setBit(mStatusFlags, flag); }
-    void clearFlag(Flags flag) { clearBit(mStatusFlags, flag); }
-    void updateFlag(Flags flag, bool set) { updateBit(mStatusFlags, flag, set); }
+    uint8_t testFlag(Flags flag) const { return testBit(mStatusFlags, (uint8_t)flag); }
+    void setFlag(Flags flag) { setBit(mStatusFlags, (uint8_t)flag); }
+    void clearFlag(Flags flag) { clearBit(mStatusFlags, (uint8_t)flag); }
+    void updateFlag(Flags flag, bool set) { updateBit(mStatusFlags, (uint8_t)flag, set); }
 
     void opNOP(AddressingMode addrMode) { ++mCyclesUsed; }
+    void opBranchIf(AddressingMode addrMode, Flags flag, uint8_t set);
 
 #define OP(CODE) void op##CODE(AddressingMode addrMode);
     OP(LDA) OP(LDX) OP(LDY) OP(STA) OP(STX) OP(STY) // Load/Store

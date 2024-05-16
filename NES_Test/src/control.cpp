@@ -1,6 +1,6 @@
 #include "util.h"
 
-SCENARIO("Control flow instruction")
+SCENARIO("Control flow instructions")
 {
     NESTest nes;
     nes.testProgram("BRK", { OP::BRK_IMP }, 7,

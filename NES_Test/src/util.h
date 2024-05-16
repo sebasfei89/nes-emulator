@@ -49,8 +49,8 @@ struct NESTest
     }
 
     void setFlags(uint8_t flags) { cpu->mStatusFlags = flags; }
-    void setFlag(nes::MOS6502::Flags flag) { setBit(cpu->mStatusFlags, flag); }
-    void clearFlag(nes::MOS6502::Flags flag) { clearBit(cpu->mStatusFlags, flag); }
+    void setFlag(nes::MOS6502::Flags flag) { cpu->setFlag(flag); }
+    void clearFlag(nes::MOS6502::Flags flag) { cpu->clearFlag(flag); }
 
     uint8_t cpuRegister(OPAddr addr) const {
         switch (addr)

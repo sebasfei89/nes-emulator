@@ -32,7 +32,7 @@ void MOS6502::opCPY(AddressingMode addrMode) {
 
 void MOS6502::opSBC(AddressingMode addrMode) {
     const uint8_t operand = ~readOperand(addrMode);
-    const uint16_t tmp = mA + operand + testBit(mStatusFlags, Flags::Carry);
+    const uint16_t tmp = mA + operand + testFlag(Flags::Carry);
     updateFlag(Flags::Carry, tmp > 0xFF);
     const bool overflow = !((mA ^ operand) & 0x80) && ((mA ^ tmp) & 0x80);
     updateFlag(Flags::Overflow, overflow);
