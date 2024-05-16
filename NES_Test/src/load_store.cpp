@@ -1,7 +1,6 @@
 #include "util.h"
 
 SCENARIO("Load accumulator") {
-    // LDA updates N & Z flags 0x82
     NESTest nes;
 
     // Immediate
@@ -31,6 +30,14 @@ SCENARIO("Load accumulator") {
     // X-Indexed Zero Page
     nes.testProgram("LDA $00,X with [$0001]=$11 and X=$01", {OP::LDA_XZP, 0x00}, 4, {{OPAddr::MemZeroPage_1, 0x11}, {OPAddr::Acc, 0xFF}, {OPAddr::X, 1}}, 0x80, OPAddr::Acc, 0x11, 0x00);
     nes.testProgram("LDA $01,X with [$0000]=$81 and X=$FF", {OP::LDA_XZP, 0x01}, 4, {{OPAddr::MemZeroPage, 0x81}, {OPAddr::Acc, 0xFF}, {OPAddr::X, 0xFF}}, 0x02, OPAddr::Acc, 0x81, 0x80);
+
+    // X-Indexed Zero Page Indirect
+    nes.testProgram("LDA ($00,X) with X=0 and [$0000]=$00 [$0001]=$02 [$0200]=$11", {OP::LDA_XZI, 0x00}, 6, {{OPAddr::X, 0}, {OPAddr::MemZeroPage, 0}, {OPAddr::MemZeroPage_1, 0x02}, {OPAddr::MemABS, 0x11}}, 0x80, OPAddr::Acc, 0x11, 0x00);
+    nes.testProgram("LDA ($FF,X) with X=1 and [$0000]=$01 [$0001]=$02 [$0201]=$81", {OP::LDA_XZI, 0xFF}, 6, {{OPAddr::X, 1}, {OPAddr::MemZeroPage, 1}, {OPAddr::MemZeroPage_1, 0x02}, {OPAddr::MemABS_1, 0x81}}, 0x02, OPAddr::Acc, 0x81, 0x80);
+
+    // Zero Page Indirect Y-Indexed
+    nes.testProgram("LDA ($00),Y with Y=1 and [$0000]=$00 [$0001]=$02 [$0201]=$11", {OP::LDA_ZIY, 0x00}, 5, {{OPAddr::Y, 1}, {OPAddr::MemZeroPage, 0x00}, {OPAddr::MemZeroPage_1, 2}, {OPAddr::MemABS_1, 0x11} }, 0x80, OPAddr::Acc, 0x11, 0x00);
+    nes.testProgram("LDA ($00),Y with Y=1 and [$0000]=$FF [$0001]=$01 [$0200]=$81", {OP::LDA_ZIY, 0x00}, 6, {{OPAddr::Y, 1}, {OPAddr::MemZeroPage, 0xFF}, {OPAddr::MemZeroPage_1, 1}, {OPAddr::MemABS, 0x81} }, 0x02, OPAddr::Acc, 0x81, 0x80);
 }
 
 SCENARIO("Load X register") {
@@ -105,6 +112,13 @@ SCENARIO("Store accumulator")
 
     // X-Indexed Zero Page
     nes.testProgram("STA $00,X with ACC=$8F and X=1", {OP::STA_XZP, 0x00}, 4, {{OPAddr::Acc, 0x8F}, {OPAddr::X, 1}}, 0x00, OPAddr::MemZeroPage_1, 0x8F, 0x00);
+
+    // X-Indexed Zero Page Indirect
+    nes.testProgram("STA ($FF,X) with ACC=$8F and X=1 and [$0000]=$00 [$0001]=$02", {OP::STA_XZI, 0xFF}, 6, {{OPAddr::Acc, 0x8F}, {OPAddr::X, 1}, {OPAddr::MemZeroPage, 0x00}, {OPAddr::MemZeroPage_1, 0x02}}, 0x00, OPAddr::MemABS, 0x8F, 0x00);
+
+    // Zero Page Indirect Y-Indexed
+    nes.testProgram("STA ($00),Y with Y=1 and [$0000]=$00 [$0001]=$02 and ACC=$11", {OP::STA_ZIY, 0x00}, 6, {{OPAddr::Y, 1}, {OPAddr::MemZeroPage, 0x00}, {OPAddr::MemZeroPage_1, 2}, {OPAddr::Acc, 0x11}}, 0x80, OPAddr::MemABS_1, 0x11, 0x80);
+    nes.testProgram("STA ($00),Y with Y=1 and [$0000]=$FF [$0001]=$01 and ACC=$81", {OP::STA_ZIY, 0x00}, 6, {{OPAddr::Y, 1}, {OPAddr::MemZeroPage, 0xFF}, {OPAddr::MemZeroPage_1, 1}, {OPAddr::Acc, 0x81}}, 0x02, OPAddr::MemABS, 0x81, 0x02);
 }
 
 SCENARIO("Store X register")

@@ -5,71 +5,40 @@
 
 namespace nes {
 
-std::array<std::array<MOS6502::InstructionFn, 8>, 3> MOS6502::sGroupInstructions = {
-    std::array<MOS6502::InstructionFn, 8>{
-        &MOS6502::groupThree_Default,
-        &MOS6502::groupThree_BIT,
-        &MOS6502::groupThree_JMP,
-        &MOS6502::groupThree_JMP_IND,
-        &MOS6502::groupThree_STY,
-        &MOS6502::groupThree_LDY,
-        &MOS6502::groupThree_CPY,
-        &MOS6502::groupThree_CPX
+#define OP(FN, AM) InstructionTableEntry{&op##FN, AddressingMode::AM}
+std::array<MOS6502::InstructionGroup, 3> MOS6502::sInstructionGroups = {
+    InstructionGroup{
+        InstructionTableRow{ OP(BRK, Implied  ), OP(NOP, ZeroPage), OP(PHP, Implied), OP(NOP, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(CLC, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(JSR, Immediate), OP(BIT, ZeroPage), OP(PLP, Implied), OP(BIT, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(SEC, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(RTI, Implied  ), OP(NOP, ZeroPage), OP(PHA, Implied), OP(JMP, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(CLI, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(RTS, Implied  ), OP(NOP, ZeroPage), OP(PLA, Implied), OP(JMP, AbsoluteIndirect), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(SEI, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(STY, ZeroPage), OP(DEY, Implied), OP(STY, Absolute        ), OP(NOP, Implied), OP(STY, XIndexedZeroPage), OP(TYA, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(LDY, Immediate), OP(LDY, ZeroPage), OP(TAY, Implied), OP(LDY, Absolute        ), OP(NOP, Implied), OP(LDY, XIndexedZeroPage), OP(CLV, Implied), OP(LDY, XIndexedAbsolute) },
+        InstructionTableRow{ OP(CPY, Immediate), OP(CPY, ZeroPage), OP(INY, Implied), OP(CPY, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(CLD, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(CPX, Immediate), OP(CPX, ZeroPage), OP(INX, Implied), OP(CPX, Absolute        ), OP(NOP, Implied), OP(NOP, XIndexedZeroPage), OP(SED, Implied), OP(NOP, XIndexedAbsolute) }
     },
-    std::array<MOS6502::InstructionFn, 8>{
-        &MOS6502::groupOne_ORA,
-        &MOS6502::groupOne_AND,
-        &MOS6502::groupOne_EOR,
-        &MOS6502::groupOne_ADC,
-        &MOS6502::groupOne_STA,
-        &MOS6502::groupOne_LDA,
-        &MOS6502::groupOne_CMP,
-        &MOS6502::groupOne_SBC
+    InstructionGroup{
+        InstructionTableRow{ OP(ORA, XIndexedZeroPageIndirect), OP(ORA, ZeroPage), OP(ORA, Immediate), OP(ORA, Absolute), OP(ORA, ZeroPageIndirectYIndexed), OP(ORA, XIndexedZeroPage), OP(ORA, YIndexedAbsolute), OP(ORA, XIndexedAbsolute) },
+        InstructionTableRow{ OP(AND, XIndexedZeroPageIndirect), OP(AND, ZeroPage), OP(AND, Immediate), OP(AND, Absolute), OP(AND, ZeroPageIndirectYIndexed), OP(AND, XIndexedZeroPage), OP(AND, YIndexedAbsolute), OP(AND, XIndexedAbsolute) },
+        InstructionTableRow{ OP(EOR, XIndexedZeroPageIndirect), OP(EOR, ZeroPage), OP(EOR, Immediate), OP(EOR, Absolute), OP(EOR, ZeroPageIndirectYIndexed), OP(EOR, XIndexedZeroPage), OP(EOR, YIndexedAbsolute), OP(EOR, XIndexedAbsolute) },
+        InstructionTableRow{ OP(ADC, XIndexedZeroPageIndirect), OP(ADC, ZeroPage), OP(ADC, Immediate), OP(ADC, Absolute), OP(ADC, ZeroPageIndirectYIndexed), OP(ADC, XIndexedZeroPage), OP(ADC, YIndexedAbsolute), OP(ADC, XIndexedAbsolute) },
+        InstructionTableRow{ OP(STA, XIndexedZeroPageIndirect), OP(STA, ZeroPage), OP(NOP, Immediate), OP(STA, Absolute), OP(STA, ZeroPageIndirectYIndexed), OP(STA, XIndexedZeroPage), OP(STA, YIndexedAbsolute), OP(STA, XIndexedAbsolute) },
+        InstructionTableRow{ OP(LDA, XIndexedZeroPageIndirect), OP(LDA, ZeroPage), OP(LDA, Immediate), OP(LDA, Absolute), OP(LDA, ZeroPageIndirectYIndexed), OP(LDA, XIndexedZeroPage), OP(LDA, YIndexedAbsolute), OP(LDA, XIndexedAbsolute) },
+        InstructionTableRow{ OP(CMP, XIndexedZeroPageIndirect), OP(CMP, ZeroPage), OP(CMP, Immediate), OP(CMP, Absolute), OP(CMP, ZeroPageIndirectYIndexed), OP(CMP, XIndexedZeroPage), OP(CMP, YIndexedAbsolute), OP(CMP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(SBC, XIndexedZeroPageIndirect), OP(SBC, ZeroPage), OP(SBC, Immediate), OP(SBC, Absolute), OP(SBC, ZeroPageIndirectYIndexed), OP(SBC, XIndexedZeroPage), OP(SBC, YIndexedAbsolute), OP(SBC, XIndexedAbsolute) }
     },
-    std::array<MOS6502::InstructionFn, 8>{
-        &MOS6502::groupTwo_ASL,
-        &MOS6502::groupTwo_ROL,
-        &MOS6502::groupTwo_LSR,
-        &MOS6502::groupTwo_ROR,
-        &MOS6502::groupTwo_STX,
-        &MOS6502::groupTwo_LDX,
-        &MOS6502::groupTwo_DEC,
-        &MOS6502::groupTwo_INC
+    InstructionGroup{
+        InstructionTableRow{ OP(NOP, Immediate), OP(ASL, ZeroPage), OP(ASL, Accumulator), OP(ASL, Absolute), OP(NOP, Implied), OP(ASL, XIndexedZeroPage), OP(NOP, Implied), OP(ASL, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(ROL, ZeroPage), OP(ROL, Accumulator), OP(ROL, Absolute), OP(NOP, Implied), OP(ROL, XIndexedZeroPage), OP(NOP, Implied), OP(ROL, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(LSR, ZeroPage), OP(LSR, Accumulator), OP(LSR, Absolute), OP(NOP, Implied), OP(LSR, XIndexedZeroPage), OP(NOP, Implied), OP(LSR, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(ROR, ZeroPage), OP(ROR, Accumulator), OP(ROR, Absolute), OP(NOP, Implied), OP(ROR, XIndexedZeroPage), OP(NOP, Implied), OP(ROR, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(STX, ZeroPage), OP(TXA, Implied    ), OP(STX, Absolute), OP(NOP, Implied), OP(STX, YIndexedZeroPage), OP(TXS, Implied), OP(NOP, XIndexedAbsolute) },
+        InstructionTableRow{ OP(LDX, Immediate), OP(LDX, ZeroPage), OP(TAX, Implied    ), OP(LDX, Absolute), OP(NOP, Implied), OP(LDX, YIndexedZeroPage), OP(TSX, Implied), OP(LDX, YIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(DEC, ZeroPage), OP(DEX, Implied    ), OP(DEC, Absolute), OP(NOP, Implied), OP(DEC, XIndexedZeroPage), OP(NOP, Implied), OP(DEC, XIndexedAbsolute) },
+        InstructionTableRow{ OP(NOP, Immediate), OP(INC, ZeroPage), OP(NOP, Implied    ), OP(INC, Absolute), OP(NOP, Implied), OP(INC, XIndexedZeroPage), OP(NOP, Implied), OP(INC, XIndexedAbsolute) }
     }
 };
-
-std::array<std::array<MOS6502::AddressingMode, 8>, 3> MOS6502::sGroupAddressingModes = {
-    std::array<MOS6502::AddressingMode, 8>{ // Group 3
-        AddressingMode::Immediate,
-        AddressingMode::ZeroPage,
-        AddressingMode::Accumulator, // 010
-        AddressingMode::Absolute,
-        AddressingMode::INVALID, // 100
-        AddressingMode::XIndexedZeroPage,
-        AddressingMode::Implied, // 110
-        AddressingMode::XIndexedAbsolute
-    },
-    std::array<MOS6502::AddressingMode, 8>{ // Group 1
-        AddressingMode::XIndexedZeroPageIndirect,
-        AddressingMode::ZeroPage,
-        AddressingMode::Immediate,
-        AddressingMode::Absolute,
-        AddressingMode::ZeroPageIndirectYIndexed,
-        AddressingMode::XIndexedZeroPage,
-        AddressingMode::YIndexedAbsolute,
-        AddressingMode::XIndexedAbsolute
-    },
-    std::array<MOS6502::AddressingMode, 8>{ // Group 2
-        AddressingMode::Immediate,
-        AddressingMode::ZeroPage,
-        AddressingMode::Accumulator,
-        AddressingMode::Absolute,
-        AddressingMode::INVALID, // 100
-        AddressingMode::XIndexedZeroPage,
-        AddressingMode::Implied, // 110
-        AddressingMode::XIndexedAbsolute
-    }
-};
+#undef OP
 
 void MOS6502::reset() {
     mPC = mBus->read(RESET_ADDRESS) | (mBus->read(RESET_ADDRESS + 1) << 8);
@@ -99,86 +68,45 @@ void MOS6502::writeByte(uint16_t address, uint8_t data) {
 
 uint8_t MOS6502::readOperand(AddressingMode addrMode)
 {
-    if (addrMode == AddressingMode::Accumulator)
-        return mA;
-
-    //case AddressingMode::Immediate:
-    //case AddressingMode::Absolute:
-    //case AddressingMode::XIndexedAbsolute:
-    //case AddressingMode::YIndexedAbsolute:
-    //case AddressingMode::ZeroPage:
-    //case AddressingMode::XIndexedZeroPage:
-    //case AddressingMode::YIndexedZeroPage:
-    return readByte(getAddress(addrMode));
+    return (addrMode == AddressingMode::Accumulator) ? mA : readByte(getAddress(addrMode));
 }
 
 void MOS6502::writeResult(AddressingMode addrMode, uint8_t value)
 {
-    switch (addrMode) {
-    case AddressingMode::Absolute:
-    case AddressingMode::XIndexedAbsolute:
-    case AddressingMode::YIndexedAbsolute:
-    case AddressingMode::ZeroPage:
-    case AddressingMode::XIndexedZeroPage:
-    case AddressingMode::YIndexedZeroPage:
-        writeByte(getAddress(addrMode, true), value);
-        break;
-    default:
-        break;
-    }
+    // Absolute, XIndexedAbsolute, YIndexedAbsolute
+    // ZeroPage, XIndexedZeroPage, YIndexedZeroPage, XIndexedZeroPageIndirect
+    writeByte(getAddress(addrMode, true), value);
 }
 
-void MOS6502::readModifyWrite(AddressingMode addrMode, std::function<void(uint8_t &value)> updateFn)
+void MOS6502::readModifyWrite(AddressingMode addrMode, UpdateFn updateFn)
 {
-    switch (addrMode) {
-    case AddressingMode::Accumulator:
-        updateFn(mA);
-        break;
-    case AddressingMode::Absolute:
-    case AddressingMode::XIndexedAbsolute:
-    case AddressingMode::ZeroPage:
-    case AddressingMode::XIndexedZeroPage: {
-        const uint16_t addr = getAddress(addrMode, true);
-        uint8_t value = readByte(addr);
-        updateFn(value);
-        writeByte(addr, value);
-    } break;
-    default:
-        break;
+    if (addrMode == AddressingMode::Accumulator) {
+        mA = updateFn(mA);
     }
+    else {
+        // Absolute, XIndexedAbsolute, ZeroPage, XIndexedZeroPage
+        const uint16_t addr = getAddress(addrMode, true);
+        writeByte(addr, updateFn(readByte(addr)));
+    }
+    ++mCyclesUsed;
 }
 
 uint16_t MOS6502::getAddress(AddressingMode addrMode, bool write) {
     switch (addrMode) {
-    case AddressingMode::Accumulator:
-        assert(false);
-        break;
-    case AddressingMode::Immediate:
-        return mPC++;
-    case AddressingMode::Absolute:
-        return readNextByte() | (readNextByte() << 8);
-    case AddressingMode::XIndexedAbsolute: {
-        const uint16_t effectiveAddr = (readNextByte() | (readNextByte() << 8));
-        if (write || ((effectiveAddr & 0x00FF) + mX > 0x00FF))
-            ++mCyclesUsed;
-        return effectiveAddr + mX;
-    }
-    case AddressingMode::YIndexedAbsolute: {
-        const uint16_t effectiveAddr = (readNextByte() | (readNextByte() << 8));
-        if (write || ((effectiveAddr & 0x00FF) + mY > 0x00FF))
-            ++mCyclesUsed;
-        return effectiveAddr + mY;
-    }
-    case AddressingMode::ZeroPage:
-        return readNextByte();
-    case AddressingMode::XIndexedZeroPage:
-        ++mCyclesUsed;
-        return (uint8_t)(readNextByte() + mX);
-    case AddressingMode::YIndexedZeroPage:
-        ++mCyclesUsed;
-        return (uint8_t)(readNextByte() + mY);
+        case AddressingMode::Immediate:                               return mPC++;
+        case AddressingMode::Absolute:                                return readAddressAbs();
+        case AddressingMode::AbsoluteIndirect:                        return readAddressInd(readAddressAbs());
+        case AddressingMode::XIndexedAbsolute:                        return handlePageCross(readAddressAbs(), mX, write);
+        case AddressingMode::YIndexedAbsolute:                        return handlePageCross(readAddressAbs(), mY, write);
+        case AddressingMode::ZeroPage:                                return readNextByte();
+        case AddressingMode::XIndexedZeroPage:         ++mCyclesUsed; return (uint8_t)(readNextByte() + mX);
+        case AddressingMode::YIndexedZeroPage:         ++mCyclesUsed; return (uint8_t)(readNextByte() + mY);
+        case AddressingMode::XIndexedZeroPageIndirect: ++mCyclesUsed; return readAddressInd((uint8_t)(readNextByte() + mX));
+        case AddressingMode::ZeroPageIndirectYIndexed:                return handlePageCross(readAddressInd(readNextByte()), mY, write);
+        default: break;
     }
 
+    assert(false);
     return 0x0000;
 }
 
@@ -189,10 +117,12 @@ void MOS6502::runInstruction() {
     const uint8_t bbb = ((uint8_t)instruction & 0b0001'1100) >> 2; // Addressing mode
     const uint8_t cc =  ((uint8_t)instruction & 0b0000'0011) >> 0; // Group
     if (cc != 0x03) {
-        (this->*sGroupInstructions[cc][aaa])(sGroupAddressingModes[cc][bbb]);
+        const InstructionTableEntry &entry = sInstructionGroups[cc][aaa][bbb];
+        (this->*entry.op)(entry.addrMode);
     }
     else {
-        return; // Undocumented instructions
+        // Undocumented instructions
+        ++mCyclesUsed;
     }
 }
 

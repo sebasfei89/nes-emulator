@@ -48,3 +48,9 @@ SCENARIO("NOP instruction")
     NESTest nes;
     nes.testProgram("NOP", {OP::NOP_IMP}, 2, OPAddr::Acc, 0x00, 0x41, OPAddr::Acc, 0x00, 0x41);
 }
+
+SCENARIO("Undocumented instruction")
+{
+    NESTest nes;
+    nes.testProgram("UNDOCUMENTED_OP", {0xFF}, 2, {}, 0x41, {}, 0x41);
+}

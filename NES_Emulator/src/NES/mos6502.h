@@ -22,8 +22,7 @@ public:
         ZeroPage, XIndexedZeroPage, YIndexedZeroPage,
         XIndexedZeroPageIndirect, ZeroPageIndirectYIndexed,
         // 3 Bytes
-        Absolute, XIndexedAbsolute, YIndexedAbsolute, AbsoluteIndirect,
-        INVALID
+        Absolute, XIndexedAbsolute, YIndexedAbsolute, AbsoluteIndirect
     };
 
     enum Flags : uint8_t {
@@ -52,9 +51,13 @@ public:
     Ram<2048>& ram() { return mRam; }
 
 private:
-    // Read/Write to bus
+    // Read from bus
     uint8_t readNextByte() { return readByte(mPC++); }  // Consumes 1 cycle
     uint8_t readByte(uint16_t address);                 // Consumes 1 cycle
+    uint16_t readAddressAbs() { return (readNextByte() | (readNextByte() << 8)); } // Consumes 2 cycle
+    uint16_t readAddressInd(uint16_t baseAddr) { return (readByte(baseAddr) | (readByte((baseAddr & 0xFF00) | (uint8_t)(baseAddr + 1)) << 8)); } // Consumes 2 cycle
+
+    // Write to bus
     void writeByte(uint16_t address, uint8_t data);     // Consumes 1 cycle
 
     // Pull/Push to stack
@@ -64,10 +67,17 @@ private:
     // Read operand using addressing mode
     uint8_t readOperand(AddressingMode addrMode);
     void writeResult(AddressingMode addrMode, uint8_t value);
-    void readModifyWrite(AddressingMode addrMode, std::function<void(uint8_t &value)> lambda);
+    using UpdateFn = std::function<uint8_t(uint8_t value)>;
+    void readModifyWrite(AddressingMode addrMode, UpdateFn lambda);
 
     // Addressing modes
     uint16_t getAddress(AddressingMode addrMode, bool write=false);
+    uint16_t handlePageCross(uint16_t baseAddr, uint8_t offset, bool isWrite) {
+        const uint16_t effectiveAddr = baseAddr + offset;
+        if (isWrite || (baseAddr ^ effectiveAddr) >> 8)
+            ++mCyclesUsed;
+        return effectiveAddr;
+    }
 
     void runInstruction();
 
@@ -85,35 +95,20 @@ private:
     void clearFlag(Flags flag) { clearBit(mStatusFlags, flag); }
     void updateFlag(Flags flag, bool set) { updateBit(mStatusFlags, flag, set); }
 
-    // Group-one instructions
-    void groupOne_ORA(AddressingMode addrMode);
-    void groupOne_AND(AddressingMode addrMode);
-    void groupOne_EOR(AddressingMode addrMode);
-    void groupOne_ADC(AddressingMode addrMode);
-    void groupOne_STA(AddressingMode addrMode);
-    void groupOne_LDA(AddressingMode addrMode);
-    void groupOne_CMP(AddressingMode addrMode);
-    void groupOne_SBC(AddressingMode addrMode);
+    void opNOP(AddressingMode addrMode) { ++mCyclesUsed; }
 
-    // Group-two instructions
-    void groupTwo_ASL(AddressingMode addrMode);
-    void groupTwo_ROL(AddressingMode addrMode);
-    void groupTwo_LSR(AddressingMode addrMode);
-    void groupTwo_ROR(AddressingMode addrMode);
-    void groupTwo_STX(AddressingMode addrMode);
-    void groupTwo_LDX(AddressingMode addrMode);
-    void groupTwo_DEC(AddressingMode addrMode);
-    void groupTwo_INC(AddressingMode addrMode);
-
-    // Group-three instructions
-    void groupThree_Default(AddressingMode addrMode);
-    void groupThree_BIT(AddressingMode addrMode);
-    void groupThree_JMP(AddressingMode addrMode);
-    void groupThree_JMP_IND(AddressingMode addrMode);
-    void groupThree_STY(AddressingMode addrMode);
-    void groupThree_LDY(AddressingMode addrMode);
-    void groupThree_CPY(AddressingMode addrMode);
-    void groupThree_CPX(AddressingMode addrMode);
+#define OP(CODE) void op##CODE(AddressingMode addrMode);
+    OP(LDA) OP(LDX) OP(LDY) OP(STA) OP(STX) OP(STY) // Load/Store
+    OP(TAX) OP(TAY) OP(TSX) OP(TXA) OP(TXS) OP(TYA) // Transfer
+    OP(PHA) OP(PHP) OP(PLA) OP(PLP) // Stack
+    OP(ASL) OP(LSR) OP(ROL) OP(ROR) // Shift
+    OP(AND) OP(BIT) OP(EOR) OP(ORA) // Logic
+    OP(ADC) OP(CMP) OP(CPX) OP(CPY) OP(SBC) // Arithmetic
+    OP(DEC) OP(DEX) OP(DEY) OP(INC) OP(INX) OP(INY) // Dec/Inc
+    OP(BRK) OP(JMP) OP(JSR) OP(RTI) OP(RTS) // Control
+    OP(BCC) OP(BCS) OP(BEQ) OP(BMI) OP(BNE) OP(BPL) OP(BVC) OP(BVS) // Branch
+    OP(CLC) OP(CLD) OP(CLI) OP(CLV) OP(SEC) OP(SED) OP(SEI) // Flags
+#undef OP
 
 private:
     friend NESTest;
@@ -130,9 +125,14 @@ private:
     Ram<2048> mRam; // 2KB of internal RAM [$0000-$07FF]
 
 private:
-    using InstructionFn = void(MOS6502::*)(AddressingMode);
-    static std::array<std::array<InstructionFn, 8>, 3> sGroupInstructions;
-    static std::array<std::array<AddressingMode, 8>, 3> sGroupAddressingModes;
+    struct InstructionTableEntry {
+        void(MOS6502::*op)(AddressingMode);
+        AddressingMode addrMode;
+    };
+
+    using InstructionTableRow = std::array<InstructionTableEntry, 8>;
+    using InstructionGroup = std::array<InstructionTableRow, 8>;
+    static std::array<InstructionGroup, 3> sInstructionGroups;
 };
 
 }
