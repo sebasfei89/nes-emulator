@@ -92,7 +92,8 @@ project "NES_Test"
     files
     {
         "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp"
+        "%{prj.name}/src/**.cpp",
+        "%{prj.name}/assets/**.bin"
     }
 
     includedirs
@@ -102,6 +103,11 @@ project "NES_Test"
     }
 
     links { "NES_Emulator" }
+
+    filter 'files:**.bin'
+        buildmessage 'Coping test ROM file to target directory: %{cfg.targetdir}/assets/%{file.name}"'
+        buildcommands { '{COPYFILE} "%{file.relpath}" "%{cfg.targetdir}/assets/%{file.name}"' }
+        buildoutputs { '%{cfg.targetdir}/assets/%{file.name}' }
 
     filter "system:windows"
         systemversion "latest"

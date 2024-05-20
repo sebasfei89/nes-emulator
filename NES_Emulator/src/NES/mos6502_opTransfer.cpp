@@ -21,7 +21,6 @@ void MOS6502::opTYA(AddressingMode addrMode) {
 void MOS6502::opTXS(AddressingMode addrMode) {
     assert(addrMode == AddressingMode::Implied);
     mSP = mX;
-    updateNZStatusFlags(mSP);
     ++mCyclesUsed;
 }
 

@@ -12,7 +12,9 @@ void MOS6502::opPHA(AddressingMode addrMode) {
 
 void MOS6502::opPHP(AddressingMode addrMode) {
     assert(addrMode == AddressingMode::Implied);
-    stackPush(mStatusFlags);
+    // Bit 4 (Break) is pushed as 1 for non-interrupts (eg: PHP and BRK)
+    // Bit 5 (Unused) is always pushed as 1
+    stackPush(mStatusFlags | 0x30);
     ++mCyclesUsed;
 }
 
@@ -25,7 +27,8 @@ void MOS6502::opPLA(AddressingMode addrMode) {
 
 void MOS6502::opPLP(AddressingMode addrMode) {
     assert(addrMode == AddressingMode::Implied);
-    mStatusFlags = stackPull();
+    // Bit 4(Break) and bit 5(Unused) are ignored
+    mStatusFlags = (stackPull() & 0xCF) | (mStatusFlags & 0x30);
     mCyclesUsed += 2;
 }
 

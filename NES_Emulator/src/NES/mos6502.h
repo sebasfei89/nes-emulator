@@ -1,10 +1,55 @@
 #pragma once
 
+#include "./bus.h"
 #include "./ram.h"
 #include "./util.h"
 
 #include <array>
 #include <functional>
+
+// 6502 microprocessor (https://www.nesdev.org/obelisk-6502-guide/architecture.html):
+//      Little-endian 8 bit CPU with 16 bit address bus capable of addressing 64 Kb of memory
+
+// NES memory map
+//      ============== 2KB internal RAM ===============
+//      [$0000-$00FF] Zero Page memory
+//      [$0100-$01FF] Second page is reserved for the system stack and cannot be relocated
+//      [$0200-$07FF] Remainig of 2 KB internal ram
+//      -----------------------------------------------
+//      [$0800-$1FFF] 3 mirrors of [$0000-$07FF]
+//      ===================== PPU =====================
+//      [$2000-$2007] PPU registers
+//      -----------------------------------------------
+//      [$2008-$3FFF] mirrors of [$2000-$2007]
+//      ================== APU / IO ===================
+//      [$4000-$4017] NES APU and I/O registers
+//      [$4018-$401F] APU and I/O funcs normally disabled
+//      ================== CARTRIDGE ==================
+//      [$4020-$5FFF] Unmapped. Available for cartridge use
+//      [$6000-$7FFF] Usually cartridge ram
+//      [$8000-$FFF9] Usually cartridge rom and mapper registers
+//      -----------------------------------------------
+//      [$FFFA-$FFFB] Reserved for NMI handler address
+//      [$FFFC-$FFFD] Program startup address
+//      [$FFFE-$FFFF] BRK/interrupt request hanndler
+//      ===============================================
+
+// Registers (https://www.nesdev.org/obelisk-6502-guide/registers.html):
+// Program Counter [16]: points to the next instruction to be executed
+// Stack Pointer    [8]: points to the next free location in the stack (stack overflow is unchecked by the cpu, may crash the program)
+// Accumulator      [8]: used by arithmetic and logical operation
+// X & Y registers  [8]: both used for counters or offsets for accessing memory
+// Processor Status [8]:
+//      [0] Carry: signal overflow/underflow durint arithmetic/comparisson or logical shifts operations or explicitly set by SEC/CLC instructions
+//      [1] Zero: zet if result of last operation was zero
+//      [2] Interrupt disable: set by SEI/CLI instructions
+//      [3] Decimal mode: Enable BCD arithmetic during addition and subtraction. Set by SED/CLD instructions
+//      [4] Break command: Set when a BRK instruction has been executed and an interrupt has been generated to process it.
+//      [5] Unused
+//      [6] Overflow
+//      [7] Negative
+
+// Instructions: see https://www.pagetable.com/c64ref/6502/?tab=2
 
 struct NESTest;
 
@@ -38,6 +83,9 @@ public:
 
     void reset();
     size_t run(size_t numCycles);
+    void runFromAddress(uint16_t addr);
+
+    uint16_t runTillInfiniteLoop(uint16_t addr, size_t& cyclesUsed);
 
     uint8_t statusFlags() const { return mStatusFlags; }
     uint16_t programCounter() const { return mPC; }
@@ -47,8 +95,7 @@ public:
     uint8_t xRegister() const { return mX; }
     uint8_t yRegister() const { return mY; }
 
-    const Ram<2048>& ram() const { return mRam; }
-    Ram<2048>& ram() { return mRam; }
+    Bus& bus() { return mBus; }
 
 private:
     // Read from bus
@@ -86,10 +133,6 @@ private:
         updateBit(mStatusFlags, (uint8_t)Flags::Negative, value & 0x80);
     }
 
-    friend class Bus;
-    void onConnect(Bus* bus) { mBus = bus; }
-    void onDisconnect() { mBus = nullptr; }
-
     uint8_t testFlag(Flags flag) const { return testBit(mStatusFlags, (uint8_t)flag); }
     void setFlag(Flags flag) { setBit(mStatusFlags, (uint8_t)flag); }
     void clearFlag(Flags flag) { clearBit(mStatusFlags, (uint8_t)flag); }
@@ -122,8 +165,7 @@ private:
     uint8_t mX; // X registry
     uint8_t mY; // Y registry
 
-    Bus* mBus;
-    Ram<2048> mRam; // 2KB of internal RAM [$0000-$07FF]
+    Bus mBus;
 
 private:
     struct InstructionTableEntry {

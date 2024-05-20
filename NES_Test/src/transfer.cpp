@@ -30,7 +30,7 @@ SCENARIO("TAX instruction")
     nes.testProgram("TYA with Y = $00", { OP::TYA_IMP }, 2, {{OPAddr::Y, 0x00}, {OPAddr::Acc, 0x24}}, 0x80, OPAddr::Acc, 0x00, 0x02);
 
     // TXS
-    nes.testProgram("TXS with X = $13", { OP::TXS_IMP }, 2, OPAddr::X, 0x13, 0x82, OPAddr::SP, 0x13, 0x00);
-    nes.testProgram("TXS with X = $83", { OP::TXS_IMP }, 2, OPAddr::X, 0x83, 0x02, OPAddr::SP, 0x83, 0x80);
-    nes.testProgram("TXS with X = $00", { OP::TXS_IMP }, 2, OPAddr::X, 0x00, 0x80, OPAddr::SP, 0x00, 0x02);
+    nes.testProgram("TXS with X = $13", { OP::TXS_IMP }, 2, OPAddr::X, 0x13, 0x82, OPAddr::SP, 0x13, 0x82);
+    nes.testProgram("TXS with X = $83", { OP::TXS_IMP }, 2, OPAddr::X, 0x83, 0x02, OPAddr::SP, 0x83, 0x02);
+    nes.testProgram("TXS with X = $00", { OP::TXS_IMP }, 2, OPAddr::X, 0x00, 0x80, OPAddr::SP, 0x00, 0x80);
 }

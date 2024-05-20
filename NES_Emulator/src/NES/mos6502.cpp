@@ -1,7 +1,7 @@
 #include "./mos6502.h"
-#include "./nes.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace nes {
 
@@ -41,10 +41,9 @@ std::array<MOS6502::InstructionGroup, 3> MOS6502::sInstructionGroups = {
 #undef OP
 
 void MOS6502::reset() {
-    mPC = mBus->read(RESET_ADDRESS) | (mBus->read(RESET_ADDRESS + 1) << 8);
+    mPC = mBus.read(RESET_ADDRESS) | (mBus.read(RESET_ADDRESS + 1) << 8);
     mSP = 0xFF;
     mStatusFlags = mA = mX = mY = 0x00;
-    mRam.reset();
 }
 
 size_t MOS6502::run(size_t numCycles) {
@@ -56,14 +55,31 @@ size_t MOS6502::run(size_t numCycles) {
     return totalCyclesUsed;
 }
 
+void MOS6502::runFromAddress(uint16_t addr) {
+    mPC = addr;
+    while (true)
+        run(1);
+}
+
+uint16_t MOS6502::runTillInfiniteLoop(uint16_t addr, size_t &cyclesUsed) {
+    mPC = addr;
+    cyclesUsed = 0;
+    uint16_t lastPC;
+    do {
+        lastPC = mPC;
+        cyclesUsed += run(1);
+    } while (lastPC != mPC);
+    return mPC;
+}
+
 uint8_t MOS6502::readByte(uint16_t address) {
     ++mCyclesUsed;
-    return mBus->read(address);
+    return mBus.read(address);
 }
 
 void MOS6502::writeByte(uint16_t address, uint8_t data) {
     ++mCyclesUsed;
-    mBus->write(address, data);
+    mBus.write(address, data);
 }
 
 uint8_t MOS6502::readOperand(AddressingMode addrMode)

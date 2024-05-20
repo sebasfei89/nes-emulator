@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NES/nes.h"
+#include "NES/mos6502.h"
 #include "NES/opCodes.h"
 
 #include <Catch2/catch.hpp>
@@ -32,32 +32,27 @@ struct NESTest
 
     NESTest()
 	{
-        cpu = std::make_shared<nes::MOS6502>();
-        memset(cpu.get(), 0xFE, sizeof(nes::MOS6502));
-
-        cart = std::make_shared<nes::Cartridge>();
-        uint8_t cartData[]{ nes::loByte(PROGRAM_STARTUP_ADDR), nes::hiByte(PROGRAM_STARTUP_ADDR) };
-        cart->load(nes::RESET_ADDRESS, std::span{ cartData });
-
-        bus.connect(cpu);
-        bus.connect(cart);
+        uint8_t resetVector[]{ nes::loByte(PROGRAM_STARTUP_ADDR), nes::hiByte(PROGRAM_STARTUP_ADDR) };
+        ram = std::make_shared<nes::Ram<65536>>();
+        ram->load(nes::RESET_ADDRESS, std::span{ resetVector });
+        cpu.bus().connect(ram);
 	}
 
     void loadAndReset(const std::vector<uint8_t> &prog) {
-        cart->load(PROGRAM_STARTUP_ADDR, std::span{ prog.data(), prog.size() });
-        cpu->reset();
+        ram->load(PROGRAM_STARTUP_ADDR, std::span{ prog.data(), prog.size() });
+        cpu.reset();
     }
 
-    void setFlags(uint8_t flags) { cpu->mStatusFlags = flags; }
-    void setFlag(nes::MOS6502::Flags flag) { cpu->setFlag(flag); }
-    void clearFlag(nes::MOS6502::Flags flag) { cpu->clearFlag(flag); }
+    void setFlags(uint8_t flags) { cpu.mStatusFlags = flags; }
+    void setFlag(nes::MOS6502::Flags flag) { cpu.setFlag(flag); }
+    void clearFlag(nes::MOS6502::Flags flag) { cpu.clearFlag(flag); }
 
     uint8_t cpuRegister(OPAddr addr) const {
         switch (addr)
         {
-        case OPAddr::Acc: return cpu->accumulator();
-        case OPAddr::X: return cpu->xRegister();
-        case OPAddr::Y: return cpu->yRegister();
+        case OPAddr::Acc: return cpu.accumulator();
+        case OPAddr::X: return cpu.xRegister();
+        case OPAddr::Y: return cpu.yRegister();
         default:
             assert(false);
             break;
@@ -83,23 +78,23 @@ struct NESTest
         }
     }
 
-    void setStackPointer(uint8_t data) { cpu->mSP = data; }
-    void setAccumuluator(uint8_t data) { cpu->mA = data; }
-    void setRegisterX(uint8_t data) { cpu->mX = data; }
-    void setRegisterY(uint8_t data) { cpu->mY = data; }
+    void setStackPointer(uint8_t data) { cpu.mSP = data; }
+    void setAccumuluator(uint8_t data) { cpu.mA = data; }
+    void setRegisterX(uint8_t data) { cpu.mX = data; }
+    void setRegisterY(uint8_t data) { cpu.mY = data; }
 
-    uint8_t &cpuRam(uint16_t addr) const { return cpu->ram().mData[addr]; }
-    void writeCart(uint16_t addr, uint8_t value) const { return cart->write(addr, value); }
+    uint8_t& cpuRam(uint16_t addr) { return (*ram)[addr]; }
+    void writeCart(uint16_t addr, uint8_t value) { (*ram)[addr] = value; }
 
     uint8_t read(OPAddr addr) {
         switch (addr)
         {
-        case OPAddr::Acc: return cpu->mA;
-        case OPAddr::X:  return cpu->mX;
-        case OPAddr::Y:  return cpu->mY;
-        case OPAddr::PC_HI:  return cpu->mPC >> 8;
-        case OPAddr::PC_LO:  return cpu->mPC & 0x00FF;
-        case OPAddr::SP:  return cpu->mSP;
+        case OPAddr::Acc: return cpu.mA;
+        case OPAddr::X:  return cpu.mX;
+        case OPAddr::Y:  return cpu.mY;
+        case OPAddr::PC_HI:  return cpu.mPC >> 8;
+        case OPAddr::PC_LO:  return cpu.mPC & 0x00FF;
+        case OPAddr::SP:  return cpu.mSP;
         case OPAddr::MemABS: return cpuRam(CPU_ABSOLUTE_ADDRESS);
         case OPAddr::MemABS_1: return cpuRam(CPU_ABSOLUTE_ADDRESS+1);
         case OPAddr::MemABS_IND: return cpuRam(CPU_ABSOLUTE_ADDRESS_WITH_PAGE_CROSS);
@@ -199,21 +194,20 @@ struct NESTest
             }
 
             WHEN(std::format("{} cycles are run", expectedCycles)) {
-                const size_t usedCycles = cpu->run(expectedCycles);
+                const size_t usedCycles = cpu.run(expectedCycles);
                 THEN(std::format("the program is executed consuming {} cycles", expectedCycles)) {
                     CHECK(usedCycles == expectedCycles);
                     for (auto [loadAddr, expectedValue] : expectedValues) {
                         CHECK((unsigned)read(loadAddr) == (unsigned)expectedValue);
                     }
                     AND_THEN("status flags are properly set") {
-                        CHECK((unsigned)cpu->statusFlags() == (unsigned)expectedFlags);
+                        CHECK((unsigned)cpu.statusFlags() == (unsigned)expectedFlags);
                     }
                 }
             }
         }
     }
 
-    std::shared_ptr<nes::MOS6502> cpu;
-    std::shared_ptr<nes::Cartridge> cart;
-    nes::Bus bus;
+    nes::MOS6502 cpu;
+    std::shared_ptr<nes::Ram<65536>> ram;
 };
